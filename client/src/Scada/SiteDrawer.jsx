@@ -6,7 +6,7 @@ import { FaWind } from "react-icons/fa";
 import { LiaTemperatureLowSolid } from "react-icons/lia";
 import { GiPowerGenerator, GiSolarPower, GiWindTurbine } from "react-icons/gi";
 
-const SiteDrawer = ({ site, onClose, setCreateAlertModal }) => {
+const SiteDrawer = ({ site, relatedAssets, onClose, setCreateAlertModal }) => {
   const [activeAccordion, setActiveAccordion] = useState(true);
 
   const toggleAccordion = () => {
@@ -16,6 +16,58 @@ const SiteDrawer = ({ site, onClose, setCreateAlertModal }) => {
   useEffect(() => {
     setActiveAccordion(true);
   }, [site]);
+
+  const getStatusDiv = (quality, iecode) => {
+    if (quality !== 3) {
+      return <div className="px-2 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300">N/A</div>;
+    }
+  
+    let styles = "px-2 py-1 rounded-full text-sm font-medium ";
+    let text = "";
+  
+    switch (iecode) {
+      case 1:
+      case 13:
+        styles += "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
+        text = "Online";
+        break;
+      case 4:
+      case 14:
+      case 15:
+        styles += "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
+        text = "Available";
+        break;
+      case 2:
+        styles += "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300";
+        text = "Impacted";
+        break;
+      case 3:
+      case 5:
+      case 10:
+        styles += "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
+        text = "Faulted";
+        break;
+      case 11:
+      case 12:
+      case 17:
+        styles += "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
+        text = "Stopped";
+        break;
+      case 7:
+        styles += "bg-fuchsia-200 text-fuchsia-800 dark:bg-fuchsia-950 dark:text-fuchsia-300";
+        text = "Maintenance";
+        break;
+      case 8:
+        styles += "bg-fuchsia-100 text-fuchsia-800 dark:bg-fuchsia-800 dark:text-fuchsia-300";
+        text = "Repair";
+        break;
+      default:
+        styles += "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+        text = "Unknown";
+    }
+  
+    return <div className={styles}>{text}</div>;
+  };
 
   return (
     <div
@@ -160,7 +212,14 @@ const SiteDrawer = ({ site, onClose, setCreateAlertModal }) => {
             </tr>
           </thead>
           <tbody>
-            {/* Table rows go here */}
+            {relatedAssets.map((asset) => (
+              <tr key={asset.assetid} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer">
+                <td className="px-6 py-4">{asset.assetid}</td>
+                <td className="px-6 py-4">{getStatusDiv(asset.quality, asset.iecode)}</td>
+                <td className="px-6 py-4"></td>
+                <td className="px-6 py-4"></td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>

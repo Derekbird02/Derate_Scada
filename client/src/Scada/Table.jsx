@@ -16,11 +16,11 @@ const Table = ({ assetData, onRowClick }) => {
   };
 
   // Function to count assets by iecode
-  const countAssetsByIecode = (siteId, iecodeList) => {
-    return assetData.filter(
-      (asset) => asset.siteid === siteId && iecodeList.includes(asset.iecode)
-    ).length;
-  };
+//   const countAssetsByIecode = (siteId, iecodeList, quality) => {
+//     return assetData.filter(
+//       (asset) => asset.siteid === siteId && asset.quality === quality && iecodeList.includes(asset.iecode)
+//     ).length;
+//   };
 
   return (
     <div className="relative overflow-x-auto">
@@ -89,51 +89,35 @@ const Table = ({ assetData, onRowClick }) => {
                 onClick={() => onRowClick(site)}
               >
                 <td className="px-6 py-4">{site.siteName}</td>
-                <td className="px-6 py-4">{assetData.filter((asset) => asset.siteid === site.siteId).length}</td>
+                <td className="px-6 py-4"></td>
                 <td className="px-6 py-4">
-                  <span
-                    className="border border-green-400 bg-green-100 text-green-800 text-sm font-medium px-2.5 py-0.5 rounded-l-lg dark:bg-green-900 dark:text-green-300"
-                    title="Online"
-                  >
-                    {countAssetsByIecode(site.siteId, [1, 13])}
-                  </span>
-                  <span
-                    className="border border-blue-400 bg-blue-100 text-blue-800 text-sm font-medium px-2.5 py-0.5 dark:bg-blue-900 dark:text-blue-300"
-                    title="Available"
-                  >
-                    {countAssetsByIecode(site.siteId, [4, 14, 15, 6, 9])}
-                  </span>
-                  <span
-                    className="border border-purple-400 bg-purple-100 text-purple-800 text-sm font-medium px-2.5 py-0.5 dark:bg-purple-900 dark:text-purple-300"
-                    title="Impacted"
-                  >
-                    {countAssetsByIecode(site.siteId, [2])}
-                  </span>
-                  <span
-                    className="border border-red-400 bg-red-100 text-red-800 text-sm font-medium px-2.5 py-0.5 dark:bg-red-900 dark:text-red-300"
-                    title="Stopped"
-                  >
-                    {countAssetsByIecode(site.siteId, [3, 5, 10])}
-                  </span>
-                  <span
-                    className="border border-yellow-400 bg-yellow-100 text-yellow-800 text-sm font-medium px-2.5 py-0.5 dark:bg-yellow-900 dark:text-yellow-300"
-                    title="No Communication"
-                  >
-                    {countAssetsByIecode(site.siteId, [11, 12, 17])}
-                  </span>
-                  <span
-                    className="border border-fuchsia-400 bg-fuchsia-200 text-fuchsia-800 text-sm font-medium px-2.5 py-0.5 rounded-l-lg dark:bg-fuchsia-950 dark:text-fuchsia-300"
-                    title="Maintenance"
-                  >
-                    {countAssetsByIecode(site.siteId, [7])}
-                  </span>
-                  <span
-                    className="border border-fuchsia-400 bg-fuchsia-100 text-fuchsia-800 text-sm font-medium px-2.5 py-0.5 rounded-r-lg dark:bg-fuchsia-800 dark:text-fuchsia-300"
-                    title="Repair"
-                  >
-                    {countAssetsByIecode(site.siteId, [8])}
-                  </span>
-                </td>
+                <span className="border border-green-400 bg-green-100 text-green-800 text-sm font-medium inline-block w-12 text-center py-0.5 rounded-l-lg dark:bg-green-900 dark:text-green-300" title="Online">
+                    {/* {countAssetsByIeccode(site.siteId, [1,13], "3")} */}0
+                </span>
+                <span className="border border-blue-400 bg-blue-100 text-blue-800 text-sm font-medium inline-block w-12 text-center py-0.5 dark:bg-blue-900 dark:text-blue-300" title="Available">
+                    {/* {countAssetsByIeccode(site.siteId, [4,14,15], "3")} */}0
+                </span>
+                <span className="border border-purple-400 bg-purple-100 text-purple-800 text-sm font-medium inline-block w-12 text-center py-0.5 dark:bg-purple-900 dark:text-purple-300" title="Impacted">
+                  {/* {countAssetsByIeccode(site.siteId, [2], "3")} */}0
+                </span>
+                <span className="border border-red-400 bg-red-100 text-red-800 text-sm font-medium inline-block w-12 text-center py-0.5  dark:bg-red-900 dark:text-red-300" title="Faulted">
+                  {/* {countAssetsByIeccode(site.siteId, [6,9], "3")} */}0
+                </span>
+                <span className="border border-yellow-400 bg-yellow-100 text-yellow-800 text-sm font-medium inline-block w-12 text-center py-0.5  dark:bg-yellow-900 dark:text-yellow-300" title="Stopped">
+                  {/* {countAssetsByIeccode(site.siteId, [3,5,10,16], "3")} */}0
+                </span>
+                <span className="border border-gray-400 bg-gray-100 text-gray-800 text-sm font-medium mr-2 inline-block w-12 text-center py-0.5 rounded-r-lg dark:bg-gray-900 dark:text-gray-300" title="No Communication">
+                  {/* {countAssetsByIeccode(site.siteId, [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17], "0")} */}0
+                </span>
+
+                <span className="border border-fuchsia-400 bg-fuchsia-200 text-fuchsia-800 text-sm font-medium inline-block w-12 text-center py-0.5 rounded-l-lg dark:bg-fuchsia-950 dark:text-fuchsia-300" title="Maintenance">
+                  {/* {countAssetsByIeccode(site.siteId, [7], "3")} */}0
+                </span>
+
+                <span className="border border-fuchsia-400 bg-fuchsia-100 text-fuchsia-800 text-sm font-medium inline-block w-12 text-center py-0.5 rounded-r-lg dark:bg-fuchsia-800 dark:text-fuchsia-300" title="Repair">
+                  {/* {countAssetsByIeccode(site.siteId, [1,13], "8")} */}0
+                </span>
+              </td>
                 <td className="px-6 py-4"></td>
                 <td className="px-6 py-4">{site.customer}</td>
               </tr>
