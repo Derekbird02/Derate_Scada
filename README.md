@@ -1,19 +1,20 @@
-const sortByState = (a, b) => {
-  // Place quality === 0 at the end
-  if (a.quality === 0 && b.quality !== 0) return 1;
-  if (a.quality !== 0 && b.quality === 0) return -1;
+import React from 'react';
+import { FiLoader } from "react-icons/fi";
 
-  // For assets with quality === 3, sort according to stateOrder
-  if (a.quality === 3 && b.quality === 3) {
-    const stateA = stateOrder[a.ieccode] || 99;
-    const stateB = stateOrder[b.ieccode] || 99;
-    return stateA - stateB;
-  }
 
-  // If one of the assets has quality !== 3, do not change their relative order
-  if (a.quality === 3 && b.quality !== 3) return -1;
-  if (a.quality !== 3 && b.quality === 3) return 1;
-
-  // If both assets do not have quality === 3, maintain their relative order
-  return 0;
+const LoadingPage = () => {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-200">
+      <div className="p-8 bg-white shadow-lg rounded-lg">
+        <h2 className="text-3xl font-semibold mb-4">Loading SCADA...</h2>
+        <div className="flex items-center justify-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900 relative">
+            {/* <FiLoader className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-16 w-16 text-gray-900" /> */}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
+
+export default LoadingPage;
