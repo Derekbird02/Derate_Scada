@@ -22,10 +22,10 @@ const SiteDrawerInfo = ({ site, relatedAssets, toggleAccordion, activeAccordion 
                 case 4:
                 case 14:
                 case 15:
-                    totalPower += asset.ratedpower;
+                    totalPower += parseInt(asset.ratedpower, 10);
                     break;
                 case 2:
-                    totalPower += asset.ratedpower / 2;
+                    totalPower += parseFloat(asset.ratedpower) / 2;
                     break;
                 default:
                     // No action needed for other codes
@@ -48,72 +48,100 @@ const SiteDrawerInfo = ({ site, relatedAssets, toggleAccordion, activeAccordion 
                     aria-expanded={activeAccordion}
                 >
                     <span>Site Data</span>
-                    <svg
-                        data-accordion-icon
-                        className="w-3 h-3 rotate-180 shrink-0"
-                        aria-hidden="true"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 10 6"
-                    >
-                        <path
-                            stroke="currentColor"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M9 5 5 1 1 5"
-                        />
+                    <svg data-accordion-icon className="w-3 h-3 rotate-180 shrink-0" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5 5 1 1 5"/>
                     </svg>
                 </button>
             </div>
             <div
-                className={`p-5 border border-gray-200 dark:border-gray-700 rounded-b-xl ${
-                    activeAccordion ? "block" : "hidden"
-                }`}
-            >
-                <div className="grid gap-4 mb-2 sm:grid-cols-2 sm:gap-6 sm:mb-4">
-                    <dl>
-                        <dd className="flex items-center mb-1 font-xs text-gray-500 dark:text-white sm:mb-4">
-                            <TbBuildingFactory2 className="w-5 h-5" title="Site Rated Power" />: {site.tHsl.reduce((acc, value) => acc + Number(value), 0)} MW
-                        </dd>
+    className={`p-5 border border-gray-200 dark:border-gray-700 rounded-b-xl ${
+        activeAccordion ? "block" : "hidden"
+    }`}
+>
+    <div className="grid gap-4 mb-2 sm:grid-cols-3 sm:gap-6 sm:mb-4">
+        {/* ICONs */}
+        <dl>
+            <dd className="flex items-center justify-center mb-1 font-xs text-gray-500 dark:text-white sm:mb-4">
+                <TbBuildingFactory2 className="w-5 h-5" title="Site Rated Power" />
+            </dd>
 
-                        {site.tHsl.map((value, index) => (
-                            <dd key={index} className="flex items-center mb-1 font-xs text-gray-500 dark:text-white sm:mb-4">
-                                <div className="flex items-center">
-                                    <div className="relative flex items-center">
-                                        <GiPowerGenerator className="w-5 h-5 " title={`Transformer ${index + 1} HSL`} />
-                                        <sub className="text-xs">{index + 1}</sub>
-                                    </div>
-                                    <span className="ml-2">{value} MW</span>
-                                </div>
-                            </dd>
-                        ))}
-                    </dl>
+            {site.tHsl.map((value, index) => (
+                <dd key={index} className="flex items-center justify-center mb-1 font-xs text-gray-500 dark:text-white sm:mb-4">
+                    <div className="flex items-center">
+                        <div className="relative flex items-center">
+                            <GiPowerGenerator className="w-5 h-5" title={`Transformer ${index + 1} HSL`} />
+                            <sub className="text-xs">{index + 1}</sub>
+                        </div>
+                    </div>
+                </dd>
+            ))}
+        </dl>
 
-                    <dl>
-                        <dt className="sr-only">Wind</dt>
-                        <dd className="flex items-center mb-1 font-xs text-gray-500 dark:text-white sm:mb-4">
-                            <FaWind className="mr-2 w-5 h-5" title="Wind Speed" />
-                            {calculateSitePower()} m/s
-                        </dd>
+        {/* Potential */}
+        <dl>
+            <dd className="flex items-center mb-1 font-xs text-gray-500 dark:text-white sm:mb-4">
+                {site.tHsl.reduce((acc, value) => acc + Number(value), 0)} MW
+            </dd>
 
-                        <dt className="sr-only">Temp</dt>
-                        <dd className="flex items-center mb-1 font-xs text-gray-500 dark:text-white sm:mb-4">
-                            <LiaTemperatureLowSolid className="mr-2 w-5 h-5" title="Temperature" />
-                            °C
-                        </dd>
+            {site.tHsl.map((value, index) => (
+                <dd key={index} className="flex items-center mb-1 font-xs text-gray-500 dark:text-white sm:mb-4">
+                    <div className="flex items-center">
+                        <span className="">{value} MW</span>
+                    </div>
+                </dd>
+            ))}
+        </dl>
 
-                        <dt className="sr-only">Clouds</dt>
-                        <dd className="flex items-center mb-1 font-xs text-gray-500 dark:text-white sm:mb-4">
-                            <BsFillCloudSunFill className="mr-2 w-5 h-5" title="Cloud Cover" />
-                            %
-                        </dd>
-                    </dl>
-                </div>
-            </div>
+        {/* Actual */}
+        <dl>
+            <dt className="sr-only">Site Actual</dt>
+            <dd className="flex items-center mb-1 font-xs text-gray-500 dark:text-white sm:mb-4">
+                {calculateSitePower()} MW
+            </dd>
+
+            {Array.from({ length: site.tHsl.length }).map((_, index) => (
+                <dd key={index} className="flex items-center mb-1 font-xs text-gray-500 dark:text-white sm:mb-4">
+                    <div className="flex items-center">
+                        <span className="">{index} MW</span>
+                    </div>
+                </dd>
+            ))}
+        </dl>
+    </div>
+
+    {/* Divider */}
+    <hr className="my-4 border-gray-300 dark:border-gray-700" />
+
+    {/* New Horizontal Content */}
+    <div className="flex justify-around gap-4">
+        <dl className="flex items-center mb-1 font-xs text-gray-500 dark:text-white">
+            <dt className="sr-only">Wind</dt>
+            <dd className="flex items-center">
+                <FaWind className="mr-2 w-5 h-5" title="Wind Speed" />
+                {calculateSitePower()} m/s
+            </dd>
+        </dl>
+
+        <dl className="flex items-center mb-1 font-xs text-gray-500 dark:text-white">
+            <dt className="sr-only">Temp</dt>
+            <dd className="flex items-center">
+                <LiaTemperatureLowSolid className="mr-2 w-5 h-5" title="Temperature" />
+                °C
+            </dd>
+        </dl>
+
+        <dl className="flex items-center mb-1 font-xs text-gray-500 dark:text-white">
+            <dt className="sr-only">Clouds</dt>
+            <dd className="flex items-center">
+                <BsFillCloudSunFill className="mr-2 w-5 h-5" title="Cloud Cover" />
+                %
+            </dd>
+        </dl>
+    </div>
+</div>
+
         </div>
     );
 };
 
 export default SiteDrawerInfo;
-
