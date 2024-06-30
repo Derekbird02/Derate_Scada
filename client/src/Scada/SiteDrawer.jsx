@@ -1,13 +1,50 @@
 import React, { useState, useEffect } from 'react';
-import { GrUserWorker } from "react-icons/gr";
-import { BsFillCloudSunFill } from "react-icons/bs";
-import { TbWorldLongitude, TbWorldLatitude, TbBuildingFactory2 } from "react-icons/tb";
-import { FaWind } from "react-icons/fa";
-import { LiaTemperatureLowSolid } from "react-icons/lia";
-import { GiPowerGenerator, GiSolarPower, GiWindTurbine } from "react-icons/gi";
+import SiteDrawerInfo from './SiteDrawerInfo';
+
+import {GiWindTurbine } from "react-icons/gi";
 
 const SiteDrawer = ({ site, relatedAssets, onClose, setCreateAlertModal }) => {
   const [activeAccordion, setActiveAccordion] = useState(true);
+
+  const [sortCriteria, setSorfCriteria] = useState("state");
+  const [sortOrder, setSortOrder] = useState("asc");
+
+  const stateOrder = { 6: 1, 9: 1, 2: 2, 4: 3, 14: 3, 15: 3, 3: 4, 5: 4, 10: 4, 16: 4, 7: 5, 8: 6, 1: 7, 13: 7 };
+
+  const sortByState = (a, b) => {
+    if (a.quality === 0 && b.quality !== 0) return 1;
+    if (a.quality !== 0 && b.quality === 0) return -1;
+
+    if (a.quality === 3 && b.quality === 3) {
+      const stateA = stateOrder[a.ieccode] || 99;
+      const stateB = stateOrder[b.ieccode] || 99;
+      return stateA - stateB;
+    }
+
+    if (a.quality === 3 && b.quality !== 3) return -1;
+    if (a.quality !== 3 && b.quality === 3) return 1;
+
+    return 0;
+  };
+
+  const sortByName = (a,b) => {
+    const nameA = a.shortname.toLowerCase();
+    const nameB = b.shortname.toLowerCase();
+    if(nameA < nameB) return -1;
+    if(nameA > nameB) return 1;
+    return 0;
+  }
+
+  const handleSort = (criteria) => {
+    const newSortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+    setSorfCriteria(criteria);
+    setSortOrder(newSortOrder);
+  }
+
+  const sortedAssets = [...relatedAssets].sort((a,b) => {
+    if(sortCriteria === 'name') { return sortOrder === 'asc' ? sortByName(a,b) : sortByName(b,a);}
+    else if (sortCriteria === 'state'){ return sortOrder === 'asc' ? sortByState(a,b) : sortByState(b,a);}
+  });
 
   const toggleAccordion = () => {
     setActiveAccordion(!activeAccordion);
@@ -15,17 +52,18 @@ const SiteDrawer = ({ site, relatedAssets, onClose, setCreateAlertModal }) => {
 
   useEffect(() => {
     setActiveAccordion(true);
+    setSorfCriteria("state");
   }, [site]);
 
-  const getStatusDiv = (quality, iecode) => {
-    if (quality !== 3) {
-      return <div className="px-2 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300">N/A</div>;
+  const getStatusDiv = (quality, ieccode) => {
+    if (quality == 0) {
+      return <div className="px-2 py-1 rounded-full text-sm font-medium bg-gray-100 text-center text-gray-800 dark:bg-gray-900 dark:text-gray-300">No Data</div>;
     }
   
-    let styles = "px-2 py-1 rounded-full text-sm font-medium ";
+    let styles = "px-2 py-1 rounded-full text-sm font-medium text-center ";
     let text = "";
   
-    switch (iecode) {
+    switch (ieccode) {
       case 1:
       case 13:
         styles += "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
@@ -41,15 +79,15 @@ const SiteDrawer = ({ site, relatedAssets, onClose, setCreateAlertModal }) => {
         styles += "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300";
         text = "Impacted";
         break;
-      case 3:
-      case 5:
-      case 10:
+      case 6:
+      case 9:
         styles += "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
         text = "Faulted";
         break;
-      case 11:
-      case 12:
-      case 17:
+      case 3:
+      case 5:
+      case 10:
+      case 16:
         styles += "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
         text = "Stopped";
         break;
@@ -116,83 +154,11 @@ const SiteDrawer = ({ site, relatedAssets, onClose, setCreateAlertModal }) => {
         <span className="sr-only">Close menu</span>
       </button>
 
-      {/* Site Information */}
-      <div className="mt-5 bg-gray-50 dark:bg-gray-800 text-blue-600 dark:text-white mb-5">
-        <div>
-          <button
-            type="button"
-            onClick={toggleAccordion}
-            className={`flex items-center justify-between w-full p-5 font-medium text-left text-gray-500 border border-gray-200 rounded-t-xl dark:border-gray-700 dark:text-gray-400 ${
-              activeAccordion ? "active" : ""
-            }`}
-            aria-expanded={activeAccordion}
-          >
-            <span>Site Data</span>
-            <svg
-              data-accordion-icon
-              className="w-3 h-3 rotate-180 shrink-0"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 10 6"
-            >
-              <path
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M9 5 5 1 1 5"
-              />
-            </svg>
-          </button>
-        </div>
-        <div
-          className={`p-5 border border-gray-200 dark:border-gray-700 rounded-b-xl ${
-            activeAccordion ? "block" : "hidden"
-          }`}
-        >
-          <div className="grid gap-4 mb-2 sm:grid-cols-2 sm:gap-6 sm:mb-4">
-            <dl>
-              <dd className="flex items-center mb-1 font-xs text-gray-500 dark:text-white sm:mb-4">
-                <TbBuildingFactory2 className="w-5 h-5" title="Site Rated Power"/>: {site.tHsl.reduce((acc, value) => acc + Number(value), 0)} MW
-              </dd>
 
-              {site.tHsl.map((value, index) => (
-                <dd key={index} className="flex items-center mb-1 font-xs text-gray-500 dark:text-white sm:mb-4">
-                  <div className="flex items-center">
-                    <div className="relative flex items-center">
-                      <GiPowerGenerator className="w-5 h-5 " title={`Transformer ${index + 1} HSL`} />
-                      <sub className="text-xs">{index + 1}</sub>
-                    </div>
-                    <span className="ml-2">{value} MW</span>
-                  </div>
-                </dd>
-              ))}
-            </dl>
+    <SiteDrawerInfo site={site} relatedAssets={relatedAssets} toggleAccordion={toggleAccordion} activeAccordion={activeAccordion}/>
+      
 
-            <dl>
-              <dt className="sr-only">Wind</dt>
-              <dd className="flex items-center mb-1 font-xs text-gray-500 dark:text-white sm:mb-4">
-                <FaWind className="mr-2 w-5 h-5" title="Wind Speed" />
-                 m/s
-              </dd>
-
-              <dt className="sr-only">Temp</dt>
-              <dd className="flex items-center mb-1 font-xs text-gray-500 dark:text-white sm:mb-4">
-                <LiaTemperatureLowSolid className="mr-2 w-5 h-5" title="Temperature" />
-                 °C
-              </dd>
-
-              <dt className="sr-only">Clouds</dt>
-              <dd className="flex items-center mb-1 font-xs text-gray-500 dark:text-white sm:mb-4">
-                <BsFillCloudSunFill className="mr-2 w-5 h-5" title="Cloud Cover" />
-                 %
-              </dd>
-            </dl>
-          </div>
-        </div>
-      </div>
-
+      {/* Render Assets Releated To Specified Site */}
       <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
         <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
           <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
@@ -200,11 +166,35 @@ const SiteDrawer = ({ site, relatedAssets, onClose, setCreateAlertModal }) => {
               <th scope="col" className="px-6 py-3">
                 ID
               </th>
-              <th scope="col" className="px-6 py-3">
-                Name
+              <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => handleSort('name')} >
+                Name {sortCriteria === "name" && (
+                  <span className="ml-1">
+                      {sortOrder === "asc" ?
+                      <svg class="w-4 h-4 text-gray-800 dark:text-white inline-block" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                        <path fill-rule="evenodd" d="M5.575 13.729C4.501 15.033 5.43 17 7.12 17h9.762c1.69 0 2.618-1.967 1.544-3.271l-4.881-5.927a2 2 0 0 0-3.088 0l-4.88 5.927Z" clip-rule="evenodd"/>
+                      </svg>
+                      :                    
+                      <svg class="w-4 h-4 text-gray-800 dark:text-white inline-block" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                        <path fill-rule="evenodd" d="M18.425 10.271C19.499 8.967 18.57 7 16.88 7H7.12c-1.69 0-2.618 1.967-1.544 3.271l4.881 5.927a2 2 0 0 0 3.088 0l4.88-5.927Z" clip-rule="evenodd"/>
+                      </svg>
+                      }
+                  </span>
+                )}
               </th>
-              <th scope="col" className="px-6 py-3">
-                State
+              <th scope="col" className="px-6 py-3 cursor-pointer flex justify-center" onClick={() => handleSort('state')}>
+                State {sortCriteria === "state" && (
+                  <span className="ml-1">
+                      {sortOrder === "asc" ?
+                      <svg class="w-4 h-4 text-gray-800 dark:text-white inline-block" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                        <path fill-rule="evenodd" d="M5.575 13.729C4.501 15.033 5.43 17 7.12 17h9.762c1.69 0 2.618-1.967 1.544-3.271l-4.881-5.927a2 2 0 0 0-3.088 0l-4.88 5.927Z" clip-rule="evenodd"/>
+                      </svg>
+                      :                    
+                      <svg class="w-4 h-4 text-gray-800 dark:text-white inline-block" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                        <path fill-rule="evenodd" d="M18.425 10.271C19.499 8.967 18.57 7 16.88 7H7.12c-1.69 0-2.618 1.967-1.544 3.271l4.881 5.927a2 2 0 0 0 3.088 0l4.88-5.927Z" clip-rule="evenodd"/>
+                      </svg>
+                      }
+                  </span>
+                )}
               </th>
               <th scope="col" className="px-6 py-3">
                 Rated
@@ -212,12 +202,12 @@ const SiteDrawer = ({ site, relatedAssets, onClose, setCreateAlertModal }) => {
             </tr>
           </thead>
           <tbody>
-            {relatedAssets.map((asset) => (
+            {sortedAssets.map((asset) => (
               <tr key={asset.assetid} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer">
                 <td className="px-6 py-4">{asset.assetid}</td>
+                <td className="px-6 py-4">{asset.shortname}</td>
                 <td className="px-6 py-4">{getStatusDiv(asset.quality, asset.iecode)}</td>
-                <td className="px-6 py-4"></td>
-                <td className="px-6 py-4"></td>
+                <td className="px-6 py-4">{asset.ratedpower}</td>
               </tr>
             ))}
           </tbody>

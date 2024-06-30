@@ -1,5 +1,5 @@
-SELECT assetid, siteid, iecode
-FROM asset_info
+SELECT assetid, siteid, iecode, quality
+FROM signals_last
 WHERE siteid IN (
   '5000632', '50003479', '5001028', '5000872', '5002141', '5000512', '5000380', 
   '50006723', '5000311', '5000446', '50007302', '5000419', '5000629', '5000890', 
@@ -9,3 +9,24 @@ WHERE siteid IN (
   '5002383', '50006639', '5000717', '5001066', '5000816', 'STETSON_MOUNTAIN_II', 
   '5002299', '500111', '50005819', '50004823', '5000328', '5000504'
 );
+
+
+<dl>
+                        <dt className="sr-only">Wind</dt>
+                        <dd className="flex items-center mb-1 font-xs text-gray-500 dark:text-white sm:mb-4">
+                            <FaWind className="mr-2 w-5 h-5" title="Wind Speed" />
+                            {calculateSitePower()} m/s
+                        </dd>
+
+                        <dt className="sr-only">Temp</dt>
+                        <dd className="flex items-center mb-1 font-xs text-gray-500 dark:text-white sm:mb-4">
+                            <LiaTemperatureLowSolid className="mr-2 w-5 h-5" title="Temperature" />
+                            °C
+                        </dd>
+
+                        <dt className="sr-only">Clouds</dt>
+                        <dd className="flex items-center mb-1 font-xs text-gray-500 dark:text-white sm:mb-4">
+                            <BsFillCloudSunFill className="mr-2 w-5 h-5" title="Cloud Cover" />
+                            %
+                        </dd>
+                    </dl>

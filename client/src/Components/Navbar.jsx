@@ -1,7 +1,7 @@
 
 import React from 'react';
 
-const Navbar = ({ darkMode, toggleDarkMode }) => {
+const Navbar = ({ darkMode, toggleDarkMode, handleRefresh, refreshing }) => {
   return (
     <nav className="border-b  dark:border-gray-600 bg-white dark:text-white text-black shadow-md dark:bg-gray-800">
       <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
@@ -47,6 +47,17 @@ const Navbar = ({ darkMode, toggleDarkMode }) => {
                   <path fillRule="evenodd" d="M11.675 2.015a.998.998 0 0 0-.403.011C6.09 2.4 2 6.722 2 12c0 5.523 4.477 10 10 10 4.356 0 8.058-2.784 9.43-6.667a1 1 0 0 0-1.02-1.33c-.08.006-.105.005-.127.005h-.001l-.028-.002A5.227 5.227 0 0 0 20 14a8 8 0 0 1-8-8c0-.952.121-1.752.404-2.558a.996.996 0 0 0 .096-.428V3a1 1 0 0 0-.825-.985Z" clipRule="evenodd"/>
                 </svg>
               )}
+            </button>
+
+            <button
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className={`px-4 py-2 text-gray-800 dark:text-gray-300  rounded hover:bg-gray-200 dark:hover:bg-gray-500 ${refreshing ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              <svg className={`w-6 h-6 ${refreshing ? 'opacity-50 cursor-not-allowed' : ''}`} aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.651 7.65a7.131 7.131 0 0 0-12.68 3.15M18.001 4v4h-4m-7.652 8.35a7.13 7.13 0 0 0 12.68-3.15M6 20v-4h4"/>
+            </svg>
+
             </button>
           </div>
         </div>
