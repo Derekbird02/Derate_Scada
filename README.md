@@ -33,7 +33,7 @@ const SiteDrawerInfo = ({ site, relatedAssets, toggleAccordion, activeAccordion 
             }
         });
 
-        return totalPower;
+        return totalPower/1000;
     };
 
     return (
@@ -61,6 +61,7 @@ const SiteDrawerInfo = ({ site, relatedAssets, toggleAccordion, activeAccordion 
     <div className="grid gap-4 mb-2 sm:grid-cols-3 sm:gap-6 sm:mb-4">
         {/* ICONs */}
         <dl>
+            <dt className="h-6"></dt>
             <dd className="flex items-center justify-center mb-1 font-xs text-gray-500 dark:text-white sm:mb-4">
                 <TbBuildingFactory2 className="w-5 h-5" title="Site Rated Power" />
             </dd>
@@ -77,8 +78,8 @@ const SiteDrawerInfo = ({ site, relatedAssets, toggleAccordion, activeAccordion 
             ))}
         </dl>
 
-        {/* Potential */}
         <dl>
+            <dt className="flex items-center mb-1 font-xs text-gray-700 dark:text-white text-xs underline underline-offset-1">Potential</dt>
             <dd className="flex items-center mb-1 font-xs text-gray-500 dark:text-white sm:mb-4">
                 {site.tHsl.reduce((acc, value) => acc + Number(value), 0)} MW
             </dd>
@@ -94,7 +95,7 @@ const SiteDrawerInfo = ({ site, relatedAssets, toggleAccordion, activeAccordion 
 
         {/* Actual */}
         <dl>
-            <dt className="sr-only">Site Actual</dt>
+        <dt className="flex items-center mb-1 font-xs text-gray-700 dark:text-white text-xs underline underline-offset-1">Actual</dt>
             <dd className="flex items-center mb-1 font-xs text-gray-500 dark:text-white sm:mb-4">
                 {calculateSitePower()} MW
             </dd>
