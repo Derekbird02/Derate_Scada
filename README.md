@@ -6,16 +6,14 @@ def format_line(line):
     else:
         raise ValueError("Each line must contain exactly 6 tab-separated values")
 
-def read_and_format_file(filename):
-    formatted_lines = []
-    with open(filename, 'r') as file:
-        for line in file:
+def read_and_format_file(input_filename, output_filename):
+    with open(input_filename, 'r') as infile, open(output_filename, 'w') as outfile:
+        for line in infile:
             formatted_line = format_line(line)
-            formatted_lines.append(formatted_line)
-    return formatted_lines
+            outfile.write(formatted_line + '\n')
 
 if __name__ == "__main__":
     input_filename = "input.txt"  # Replace with your input file name
-    formatted_data = read_and_format_file(input_filename)
-    for entry in formatted_data:
-        print(entry)
+    output_filename = "output.txt"  # Replace with your desired output file name
+    read_and_format_file(input_filename, output_filename)
+    print(f"Formatted data has been written to {output_filename}")
