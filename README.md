@@ -23,55 +23,55 @@ const organizeData = (assets) => {
 
 // Function to get color class based on ieccode and quality
 const getColorClass = (ieccode, quality, name) => {
-    if (quality === 0) {
-        return <div className="py-1 rounded-full text-sm font-medium bg-gray-100 text-center text-gray-800 dark:bg-gray-900 dark:text-gray-300">No Data</div>;
-      }
-    
-      let styles = "py-1 rounded-full text-sm font-medium text-center ";
-      let text = "";
-    
-      switch (ieccode) {
-        case 1:
-        case 13:
-          styles += "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
-          text = "Online";
-          break;
-        case 4:
-        case 14:
-        case 15:
-          styles += "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
-          text = "Available";
-          break;
-        case 2:
-          styles += "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300";
-          text = "Impacted";
-          break;
-        case 6:
-        case 9:
-          styles += "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
-          text = "Faulted";
-          break;
-        case 3:
-        case 5:
-        case 10:
-        case 16:
-          styles += "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
-          text = "Stopped";
-          break;
-        case 7:
-          styles += "bg-fuchsia-200 text-fuchsia-800 dark:bg-fuchsia-950 dark:text-fuchsia-300";
-          text = "Maintenance";
-          break;
-        case 8:
-          styles += "bg-fuchsia-100 text-fuchsia-800 dark:bg-fuchsia-800 dark:text-fuchsia-300";
-          text = "Repair";
-          break;
-        default:
-          styles += "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
-          text = "Unknown";
-      }
-    
-      return <div className={styles}>{name}</div>;
+  if (quality === 0) {
+    return <div className="py-1 rounded-full text-sm font-medium bg-gray-100 text-center text-gray-800 dark:bg-gray-900 dark:text-gray-300">No Data</div>;
+  }
+
+  let styles = "py-1 rounded-full text-sm font-medium text-center ";
+  let text = "";
+
+  switch (ieccode) {
+    case 1:
+    case 13:
+      styles += "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
+      text = "Online";
+      break;
+    case 4:
+    case 14:
+    case 15:
+      styles += "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
+      text = "Available";
+      break;
+    case 2:
+      styles += "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300";
+      text = "Impacted";
+      break;
+    case 6:
+    case 9:
+      styles += "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
+      text = "Faulted";
+      break;
+    case 3:
+    case 5:
+    case 10:
+    case 16:
+      styles += "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
+      text = "Stopped";
+      break;
+    case 7:
+      styles += "bg-fuchsia-200 text-fuchsia-800 dark:bg-fuchsia-950 dark:text-fuchsia-300";
+      text = "Maintenance";
+      break;
+    case 8:
+      styles += "bg-fuchsia-100 text-fuchsia-800 dark:bg-fuchsia-800 dark:text-fuchsia-300";
+      text = "Repair";
+      break;
+    default:
+      styles += "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+      text = "Unknown";
+  }
+
+  return <div className={styles}>{name}</div>;
 };
 
 const FeederBreakdown = ({ setFeederBreakdownModal, site, relatedAssets }) => {
@@ -105,29 +105,29 @@ const FeederBreakdown = ({ setFeederBreakdownModal, site, relatedAssets }) => {
               </button>
             </div>
             {site.automation ? (
-            <div className="grid gap-4">
-              {Object.keys(organizedData).sort((a, b) => parseInt(a) - parseInt(b)).map(unitnumber => (
-                <div key={unitnumber} className="p-4 border border-gray-300 rounded-lg">
-                  <h2 className="text-lg font-bold dark:text-gray-200 text-black">Unit {unitnumber}</h2>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                    {Object.keys(organizedData[unitnumber]).sort((a, b) => parseInt(a) - parseInt(b)).map(feedernumber => (
-                      <div key={feedernumber} className="p-2 border border-gray-200 rounded-lg">
-                        <h3 className="text-md font-semibold dark:text-gray-200 text-black">Feeder {feedernumber}</h3>
-                        <ul className="list-none pl-0">
-                          {organizedData[unitnumber][feedernumber]
-                          .sort((a, b) => a.shortname.localeCompare(b.shortname))
-                          .map(asset => (
-                            <li key={asset.assetid} className="mt-1">
-                              {getColorClass(asset.ieccode, asset.quality, asset.shortname)}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    ))}
+              <div className="flex flex-wrap">
+                {Object.keys(organizedData).sort((a, b) => parseInt(a) - parseInt(b)).map(unitnumber => (
+                  <div key={unitnumber} className="m-4 p-4 border border-gray-300 rounded-lg flex flex-col" style={{ width: '100%' }}>
+                    <h2 className="text-lg font-bold dark:text-gray-200 text-black">Unit {unitnumber}</h2>
+                    <div className="flex flex-wrap">
+                      {Object.keys(organizedData[unitnumber]).sort((a, b) => parseInt(a) - parseInt(b)).map(feedernumber => (
+                        <div key={feedernumber} className="p-2 border border-gray-200 rounded-lg flex-1" style={{ minWidth: '300px' }}>
+                          <h3 className="text-md font-semibold dark:text-gray-200 text-black">Feeder {feedernumber}</h3>
+                          <ul className="list-none pl-0" style={{ maxHeight: '150px', overflowY: 'auto' }}>
+                            {organizedData[unitnumber][feedernumber]
+                              .sort((a, b) => a.shortname.localeCompare(b.shortname))
+                              .map(asset => (
+                                <li key={asset.assetid} className="mt-1">
+                                  {getColorClass(asset.ieccode, asset.quality, asset.shortname)}
+                                </li>
+                              ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
             ) : (<p className="text-center text-xl dark:text-gray-200 text-black"> Feeder Breakdown Coming Soon</p>)}
           </div>
         </div>
