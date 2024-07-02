@@ -21,9 +21,9 @@
           </button>
         </div>
         {site.automation ? (
-          <div className="flex flex-wrap">
+          <div className="flex overflow-auto">
             {Object.keys(organizedData).sort((a, b) => parseInt(a) - parseInt(b)).map(unitnumber => (
-              <div key={unitnumber} className="m-4 p-4 border border-gray-300 w-full rounded-lg">
+              <div key={unitnumber} className="m-4 p-4 border border-gray-300 flex-none rounded-lg w-72">
                 <h2 className="text-lg font-bold dark:text-gray-200 text-black">Unit {unitnumber}</h2>
                 <div className="flex overflow-auto">
                   {Object.keys(organizedData[unitnumber]).sort((a, b) => parseInt(a) - parseInt(b)).map(feedernumber => (
