@@ -1,16 +1,12 @@
-const getIconColor = (expiredate) => {
-  const now = new Date();
-  const expireDateObj = new Date(expiredate);
-  const oneDay = 24 * 60 * 60 * 1000;
-  const oneWeek = 7 * oneDay;
+const validate = () => {
+    const newErrors = {};
+    tHslValues.forEach((value, index) => {
+      if (!value) newErrors[`t${index + 1}`] = "This field is required";
+    });
+    if (!expireDate) newErrors.expireDate = "This field is required";
+    if (!userName) newErrors.userName = "This field is required";
+    if (!notes) newErrors.notes = "This field is required";
 
-  if (expireDateObj < now) {
-    return 'text-red-500';
-  } else if (expireDateObj - now <= oneDay) {
-    return 'text-orange-500';
-  } else if (expireDateObj - now <= oneWeek) {
-    return 'text-yellow-500';
-  } else {
-    return 'text-gray-500 dark:text-gray-400';
-  }
-};
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
