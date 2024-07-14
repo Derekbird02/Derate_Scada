@@ -1,24 +1,22 @@
-const insertTicket = async (ticket) => {
-    const insertQuery = `
-        INSERT INTO derate_scada_tickets (ticket_id, description, created_at)
-        VALUES ($1, $2, $3)
-    `;
-    try {
-        const res = await pool2.query(insertQuery, [ticket.ticketId, ticket.description, ticket.createdAt]);
-        console.log('Insert successful:', res);
-    } catch (err) {
-        console.error('Error executing insert query:', err);
-        throw err;
-    }
-};
+const handleSubmit = async (event) => {
+    event.preventDefault();
 
-// Endpoint to handle the insert operation
-app.post('/add-ticket', async (req, res) => {
-    const newTicket = req.body;
+    const formattedExpireDate = expireDate ? dayjs(expireDate).utc().format() : null; // Format the date to ISO 8601 UTC
+
+    const newDerate = {
+      siteId: site.siteId,
+      siteName: site.siteName,
+      tHsl: tHslValues,
+      expireDate: formattedExpireDate,
+      notes,
+      userName,
+    };
+
     try {
-        await insertTicket(newTicket);
-        res.status(200).send('Ticket inserted successfully');
-    } catch (err) {
-        res.status(500).send('Error inserting ticket');
+      const response = await axios.post('http://localhost:3000/create-derate', newDerate);
+      console.log(response.data);
+      setCreateAlertModal(false);
+    } catch (error) {
+      console.error('Error creating derate:', error);
     }
-});
+  };
