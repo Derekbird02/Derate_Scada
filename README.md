@@ -49,7 +49,7 @@ export const calculateFeederPowerActual = (feederAssets) => {
   return totalPower / 1000;
 };
 
-export const calculateTransformerPower = (relatedAssets, tNumber) => {
+export const calculateTransformerPowerActual = (relatedAssets, tNumber) => {
   let transformerPower = 0;
 
   const relevantAssets = relatedAssets.filter(asset => asset.unitnumber === tNumber && asset.quality !== 0);
@@ -121,7 +121,7 @@ const getColorClass = (ieccode, quality, originalIecCode) => {
       text = "Unknown";
   }
 
-  if (quality === 0) {
+  if (quality == 0) {
     styles = "py-1 rounded-full text-sm font-medium bg-gray-100 text-center text-gray-800 dark:bg-gray-900 dark:text-gray-300 cursor-pointer border border-dashed border-gray-600";
     text = "No Data";
   }
@@ -136,7 +136,7 @@ const getColorClass = (ieccode, quality, originalIecCode) => {
 const FeederBreakdown = ({ setFeederBreakdownModal, site, relatedAssets }) => {
   const [organizedData, setOrganizedData] = useState({});
   const [assets, setAssets] = useState(
-    relatedAssets.map(asset => ({ ...asset, originalIecCode: asset.ieccode }))
+    relatedAssets.map(asset => ({ ...asset, originalIecCode: asset.ieccode, originalQuality: asset.quality }))
   );
 
   useEffect(() => {
@@ -146,13 +146,30 @@ const FeederBreakdown = ({ setFeederBreakdownModal, site, relatedAssets }) => {
   const toggleAssetStatus = (unitnumber, feedernumber, assetid) => {
     setAssets(prevAssets =>
       prevAssets.map(asset => {
-        if (asset.unitnumber === unitnumber && asset.feedernumber === feedernumber && asset.assetid === assetid) {
-          if (asset.ieccode === 1 || asset.ieccode === 13) {
-            return { ...asset, ieccode: 6 }; // Faulted
-          } else if (asset.ieccode === 6) {
-            return { ...asset, ieccode: asset.originalIecCode }; // Original state
+        if (asset.unitnumber == unitnumber && asset.feedernumber == feedernumber && asset.assetid == assetid) {
+          if (asset.ieccode == 1 || asset.ieccode == 13) {
+            return { ...asset, ieccode: 6, quality: 3 }; // Faulted
+          } else if (asset.ieccode == 6) {
+            return { ...asset, ieccode: asset.originalIecCode, quality: asset.originalQuality }; // Original state
           } else {
-            return { ...asset, ieccode: 1 }; // Online
+            return { ...asset, ieccode: 1, quality: 3 }; // Online
+          }
+        }
+        return asset;
+      })
+    );
+  };
+
+  const toggleFeederAssets = (unitnumber, feedernumber) => {
+    setAssets(prevAssets =>
+      prevAssets.map(asset => {
+        if (asset.unitnumber == unitnumber && asset.feedernumber == feedernumber) {
+          if (asset.ieccode == 1 || asset.ieccode == 13) {
+            return { ...asset, ieccode: 6, quality: 3 }; // Faulted
+          } else if (asset.ieccode == 6) {
+            return { ...asset, ieccode: asset.originalIecCode, quality: asset.originalQuality }; // Original state
+          } else {
+            return { ...asset, ieccode: 1, quality: 3 }; // Online
           }
         }
         return asset;
@@ -183,21 +200,24 @@ const FeederBreakdown = ({ setFeederBreakdownModal, site, relatedAssets }) => {
                 <span className="sr-only">Close modal</span>
               </button>
             </div>
-            {site.automation ? (
+            {site.showFeeders ? (
               <div className="flex justify-center">
                 {Object.keys(organizedData)
                   .sort((a, b) => parseInt(a) - parseInt(b))
                   .map(unitnumber => (
                     <div key={unitnumber} className="m-4 p-4 border border-gray-300 rounded-lg">
                       <h2 className="text-lg font-bold dark:text-gray-200 text-black">
-                        Unit {unitnumber} - {calculateTransformerPower(assets, unitnumber)} MW
+                        Unit {unitnumber} - {calculateTransformerPowerActual(assets, unitnumber)} MW
                       </h2>
                       <div className="flex flex-wrap">
                         {Object.keys(organizedData[unitnumber])
                           .sort((a, b) => parseInt(a) - parseInt(b))
                           .map(feedernumber => (
                             <div key={feedernumber} className="m-2 p-2 border border-gray-200 rounded-lg w-24">
-                              <h3 className="text-md font-semibold dark:text-gray-200 text-black">
+                              <h3
+                                className="text-md font-semibold dark:text-gray-200 text-black cursor-pointer"
+                                onClick={() => toggleFeederAssets(unitnumber, feedernumber)}
+                              >
                                 Feeder {feedernumber}
                               </h3>
                               <hr className="mt--2 border-gray-300 dark:border-gray-700" />
