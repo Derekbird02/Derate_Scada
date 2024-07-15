@@ -1,12 +1,27 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
-// Initial state for feeders state tracking
-const initialFeedersState = {};
+// Assuming organizedData is defined somewhere
+const organizedData = {
+  // Define your organized data structure here
+};
 
-// Main component
 const MyComponent = () => {
   const [assets, setAssets] = useState([]); // Your initial assets state
-  const [feedersState, setFeedersState] = useState(initialFeedersState);
+  const [feedersState, setFeedersState] = useState({}); // Initial state for feeders state tracking
+
+  // Initialize feedersState on component mount
+  useEffect(() => {
+    // Initialize feedersState based on organizedData structure
+    const initialFeedersState = {};
+
+    Object.keys(organizedData).forEach(unitnumber => {
+      Object.keys(organizedData[unitnumber]).forEach(feedernumber => {
+        initialFeedersState[`${unitnumber}-${feedernumber}`] = 'Original';
+      });
+    });
+
+    setFeedersState(initialFeedersState);
+  }, []);
 
   const toggleFeederAssets = (unitnumber, feedernumber) => {
     const allAssets = organizedData[unitnumber][feedernumber];
@@ -54,3 +69,5 @@ const MyComponent = () => {
     </div>
   );
 };
+
+export default MyComponent;
