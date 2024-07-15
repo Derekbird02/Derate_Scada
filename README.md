@@ -135,51 +135,68 @@ const getColorClass = (ieccode, quality, originalIecCode) => {
 
 const FeederBreakdown = ({ setFeederBreakdownModal, site, relatedAssets }) => {
   const [organizedData, setOrganizedData] = useState({});
-  const [assets, setAssets] = useState(
-    relatedAssets.map(asset => ({ ...asset, originalIecCode: asset.ieccode, originalQuality: asset.quality }))
-  );
+  const [feederStates, setFeederStates] = useState({}); // Track feeder states
 
   useEffect(() => {
-    setOrganizedData(organizeData(assets));
-  }, [assets]);
+    setOrganizedData(organizeData(relatedAssets));
+  }, [relatedAssets]);
+
+  useEffect(() => {
+    // Initialize feeder states based on organizedData
+    const initialFeederStates = {};
+    Object.keys(organizedData).forEach(unitnumber => {
+      initialFeederStates[unitnumber] = {};
+      Object.keys(organizedData[unitnumber]).forEach(feedernumber => {
+        initialFeederStates[unitnumber][feedernumber] = 0; // 0 -> Original, 1 -> Online, 2 -> Faulted
+      });
+    });
+    setFeederStates(initialFeederStates);
+  }, [organizedData]);
 
   const toggleAssetStatus = (unitnumber, feedernumber, assetid) => {
-    setAssets(prevAssets =>
-      prevAssets.map(asset => {
-        if (asset.unitnumber == unitnumber && asset.feedernumber == feedernumber && asset.assetid == assetid) {
-          if (asset.ieccode == 1 || asset.ieccode == 13) {
+    setOrganizedData(prevOrganizedData => {
+      const updatedOrganizedData = { ...prevOrganizedData };
+      updatedOrganizedData[unitnumber][feedernumber] = updatedOrganizedData[unitnumber][feedernumber].map(asset => {
+        if (asset.assetid === assetid) {
+          if (asset.ieccode === 1 || asset.ieccode === 13) {
             return { ...asset, ieccode: 6, quality: 3 }; // Faulted
-          } else if (asset.ieccode == 6) {
+          } else if (asset.ieccode === 6) {
             return { ...asset, ieccode: asset.originalIecCode, quality: asset.originalQuality }; // Original state
           } else {
             return { ...asset, ieccode: 1, quality: 3 }; // Online
           }
         }
         return asset;
-      })
-    );
+      });
+      return updatedOrganizedData;
+    });
   };
 
   const toggleFeederAssets = (unitnumber, feedernumber) => {
-    const allAssets = organizedData[unitnumber][feedernumber];
-
-    setAssets(prevAssets =>
-      prevAssets.map(asset => {
-        const updatedAsset = allAssets.find(a => a.assetid === asset.assetid);
-
-        if (!updatedAsset) {
-          return asset;
-        }
-
-        if (updatedAsset.ieccode == 1 || updatedAsset.ieccode == 13) {
+    setOrganizedData(prevOrganizedData => {
+      const updatedOrganizedData = { ...prevOrganizedData };
+      const currentState = feederStates[unitnumber][feedernumber];
+      updatedOrganizedData[unitnumber][feedernumber] = updatedOrganizedData[unitnumber][feedernumber].map(asset => {
+        if (currentState === 0) {
           return { ...asset, ieccode: 6, quality: 3 }; // Faulted
-        } else if (updatedAsset.ieccode == 6) {
-          return { ...asset, ieccode: updatedAsset.originalIecCode, quality: updatedAsset.originalQuality }; // Original state
-        } else {
+        } else if (currentState === 1) {
           return { ...asset, ieccode: 1, quality: 3 }; // Online
+        } else {
+          return { ...asset, ieccode: asset.originalIecCode, quality: asset.originalQuality }; // Original state
         }
-      })
-    );
+      });
+
+      const nextFeederState = (currentState + 1) % 3; // Cycle through 0, 1, 2
+      setFeederStates(prevStates => ({
+        ...prevStates,
+        [unitnumber]: {
+          ...prevStates[unitnumber],
+          [feedernumber]: nextFeederState,
+        },
+      }));
+
+      return updatedOrganizedData;
+    });
   };
 
   return (
@@ -212,7 +229,7 @@ const FeederBreakdown = ({ setFeederBreakdownModal, site, relatedAssets }) => {
                   .map(unitnumber => (
                     <div key={unitnumber} className="m-4 p-4 border border-gray-300 rounded-lg">
                       <h2 className="text-lg font-bold dark:text-gray-200 text-black">
-                        Unit {unitnumber} - {calculateTransformerPowerActual(assets, unitnumber)} MW
+                        Unit {unitnumber} - {calculateTransformerPowerActual(organizedData[unitnumber])} MW
                       </h2>
                       <div className="flex flex-wrap">
                         {Object.keys(organizedData[unitnumber])
