@@ -121,7 +121,7 @@ const getColorClass = (ieccode, quality, originalIecCode) => {
       text = "Unknown";
   }
 
-  if (quality == 0) {
+  if (quality === 0) {
     styles = "py-1 rounded-full text-sm font-medium bg-gray-100 text-center text-gray-800 dark:bg-gray-900 dark:text-gray-300 cursor-pointer border border-dashed border-gray-600";
     text = "No Data";
   }
@@ -177,21 +177,27 @@ const FeederBreakdown = ({ setFeederBreakdownModal, site, relatedAssets }) => {
       const updatedOrganizedData = { ...prevOrganizedData };
       const currentState = feederStates[unitnumber][feedernumber];
       updatedOrganizedData[unitnumber][feedernumber] = updatedOrganizedData[unitnumber][feedernumber].map(asset => {
-        if (currentState === 0) {
-          return { ...asset, ieccode: 6, quality: 3 }; // Faulted
-        } else if (currentState === 1) {
-          return { ...asset, ieccode: 1, quality: 3 }; // Online
-        } else {
-          return { ...asset, ieccode: asset.originalIecCode, quality: asset.originalQuality }; // Original state
+        switch (currentState) {
+          case 0: // Original state
+            return { ...asset, ieccode: asset.ieccode, quality: asset.quality }; // No change
+          case 1: // Online
+            if (asset.ieccode === 1 || asset.ieccode === 13) {
+              return { ...asset, ieccode: 6, quality: 3 }; // Faulted
+            }
+            return { ...asset, ieccode: 1, quality: 3 }; // Online
+          case 2: // Faulted
+            return { ...asset, ieccode: 6, quality: 3 }; // Faulted
+          default:
+            return asset;
         }
       });
 
-      const nextFeederState = (currentState + 1) % 3; // Cycle through 0, 1, 2
+      // Update feeder state
       setFeederStates(prevStates => ({
         ...prevStates,
         [unitnumber]: {
           ...prevStates[unitnumber],
-          [feedernumber]: nextFeederState,
+          [feedernumber]: (currentState + 1) % 3, // Cycle through 0, 1, 2
         },
       }));
 
