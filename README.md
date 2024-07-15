@@ -1,39 +1,21 @@
-const toggleFeederAssets = (unitnumber, feedernumber) => {
-    const allAssets = organizedData[unitnumber][feedernumber];
-    const currentFeederState = feederArray[feedernumber];
+const [organizedData, setOrganizedData] = useState({});
+  const [assets, setAssets] = useState(
+    relatedAssets.map(asset => ({ ...asset, originalIecCode: asset.ieccode, originalQuality: asset.quality }))
+  );
+  const [feederArray, setFeederArray] = useState({});
 
-    let newIecCode;
-    let newFeederState;
+  useEffect(() => {
+    setOrganizedData(organizeData(assets));
+  }, [assets]);
 
-    if (currentFeederState === 'or') {
-      newIecCode = 1; // Online
-      newFeederState = 'on';
-    } else if (currentFeederState === 'on') {
-      newIecCode = 6; // Faulted
-      newFeederState = 'fa';
-    } else if (currentFeederState === 'fa') {
-      newIecCode = 'original'; // Original state
-      newFeederState = 'or';
-    }
+  useEffect(() => {
+    const initialFeederArray = {};
 
-    setAssets(prevAssets =>
-      prevAssets.map(asset => {
-        const updatedAsset = allAssets.find(a => a.assetid === asset.assetid);
+    Object.keys(organizedData).forEach(unitnumber => {
+      Object.keys(organizedData[unitnumber]).forEach(feedernumber => {
+        initialFeederArray[feedernumber] = 'or';
+      });
+    });
 
-        if (!updatedAsset) {
-          return asset;
-        }
-
-        if (newIecCode === 'original') {
-          return { ...asset, ieccode: asset.originalIecCode, quality: asset.originalQuality };
-        } else {
-          return { ...asset, ieccode: newIecCode, quality: 3 };
-        }
-      })
-    );
-
-    setFeederArray(prevFeederArray => ({
-      ...prevFeederArray,
-      [feedernumber]: newFeederState
-    }));
-  };
+    setFeederArray(initialFeederArray);
+  }, [organizedData]);
