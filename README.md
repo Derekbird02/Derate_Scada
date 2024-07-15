@@ -161,18 +161,23 @@ const FeederBreakdown = ({ setFeederBreakdownModal, site, relatedAssets }) => {
   };
 
   const toggleFeederAssets = (unitnumber, feedernumber) => {
+    const allAssets = organizedData[unitnumber][feedernumber];
+
     setAssets(prevAssets =>
       prevAssets.map(asset => {
-        if (asset.unitnumber == unitnumber && asset.feedernumber == feedernumber) {
-          if (asset.ieccode == 1 || asset.ieccode == 13) {
-            return { ...asset, ieccode: 6, quality: 3 }; // Faulted
-          } else if (asset.ieccode == 6) {
-            return { ...asset, ieccode: asset.originalIecCode, quality: asset.originalQuality }; // Original state
-          } else {
-            return { ...asset, ieccode: 1, quality: 3 }; // Online
-          }
+        const updatedAsset = allAssets.find(a => a.assetid === asset.assetid);
+
+        if (!updatedAsset) {
+          return asset;
         }
-        return asset;
+
+        if (updatedAsset.ieccode == 1 || updatedAsset.ieccode == 13) {
+          return { ...asset, ieccode: 6, quality: 3 }; // Faulted
+        } else if (updatedAsset.ieccode == 6) {
+          return { ...asset, ieccode: updatedAsset.originalIecCode, quality: updatedAsset.originalQuality }; // Original state
+        } else {
+          return { ...asset, ieccode: 1, quality: 3 }; // Online
+        }
       })
     );
   };
