@@ -1,5 +1,5 @@
 =IF(
-    ISNUMBER(A1), 
-    TEXT(A1, "yyyy-mm-dd hh:mm:ss"),
-    TEXT(DATE("20"&MID(A1,7,2),MID(A1,1,2),MID(A1,4,2)) + TIME(MID(A1,10,2),MID(A1,13,2),MID(A1,16,2)), "yyyy-mm-dd hh:mm:ss")
+    ISNUMBER(B2), 
+    TEXT(B2, "yyyy-mm-dd hh:mm:ss"),
+    TEXT(DATE(MID(B2,7,4), LEFT(B2,2), MID(B2,4,2)) + TIME(MID(B2,13,2), MID(B2,16,2), MID(B2,19,2)), "yyyy-mm-dd hh:mm:ss")
 )
