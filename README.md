@@ -1,18 +1,5 @@
-SELECT
-    ai.shortname,
-    ai.systemnumber,
-    si.name,
-    si.countrycode,
-    si.env,
-    COALESCE(am.active, 0) AS active
-FROM
-    asset_info ai
-JOIN
-    site_info si ON ai.siteid = si.siteid
-LEFT JOIN
-    (SELECT assetid, active
-     FROM mapping_table
-     WHERE autoid = 1) am ON ai.assetid = am.assetid
-WHERE
-    ai.siteid IN (SELECT siteid FROM sitegroup_info)
-    AND ai.assettypeid = 'Generator';
+=IF(
+    ISNUMBER(A1), 
+    TEXT(A1, "yyyy-mm-dd hh:mm:ss"),
+    TEXT(DATE("20"&MID(A1,7,2),MID(A1,1,2),MID(A1,4,2)) + TIME(MID(A1,10,2),MID(A1,13,2),MID(A1,16,2)), "yyyy-mm-dd hh:mm:ss")
+)
