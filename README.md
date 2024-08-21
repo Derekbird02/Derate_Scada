@@ -1,5 +1,7 @@
-WITH user_map AS (
-    SELECT 'jdoe' AS username, '2230421' AS sso, 'John Doe' AS fullname
-    UNION ALL
-    SELECT 'tommy', '36574781', 'Tommy Lee'
+WITH user_mapping AS (
+    SELECT * FROM (
+        VALUES
+            ('jdoe', '2230421', 'John Doe'),
+            ('tommy', '36574781', 'Tommy Lee')
+    ) AS t(username, number, fullname)
 )
