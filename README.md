@@ -7,7 +7,7 @@ file_element = ET.SubElement(rdcman, 'file')
 group = ET.SubElement(file_element, 'group')
 properties = ET.SubElement(group, 'properties')
 group_name = ET.SubElement(properties, 'name')
-group_name.text = 'Imported Servers'  # You can change this group name
+group_name.text = 'Imported Servers'  # Change this group name as needed
 
 # Read CSV and add servers
 with open('servers.csv', 'r') as csvfile:
@@ -19,13 +19,13 @@ with open('servers.csv', 'r') as csvfile:
         
         # Set the server properties from the CSV columns
         name = ET.SubElement(properties, 'name')
-        name.text = row['ServerName']
+        name.text = row['ServerAddress']  # Use ServerAddress for the 'name' field
         
         displayName = ET.SubElement(properties, 'displayName')
-        displayName.text = row['ServerName']
+        displayName.text = row['ServerName']  # Use ServerName for the 'displayName' field
         
         address = ET.SubElement(properties, 'address')
-        address.text = row['ServerAddress']
+        address.text = row['ServerAddress']  # Use ServerAddress for the 'address' field
         
         userName = ET.SubElement(properties, 'userName')
         userName.text = f"{row['Domain']}\\Username"  # Replace 'Username' with actual username or leave as is
