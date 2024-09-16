@@ -1,29 +1,35 @@
-# Define the folder containing the RDP shortcuts
-$rdpFolder = "$env:UserProfile\Desktop\Global Sites"
+import csv
+import xml.etree.ElementTree as ET
 
-# Get all .rdp files in the folder
-$rdpFiles = Get-ChildItem -Path $rdpFolder -Filter *.rdp
+# Create the root element
+rdcman = ET.Element('RDCMan')
+file_element = ET.SubElement(rdcman, 'file')
+group = ET.SubElement(file_element, 'group')
+properties = ET.SubElement(group, 'properties')
+group_name = ET.SubElement(properties, 'name')
+group_name.text = 'Imported Servers'  # You can change this group name
 
-# Create an array to store the results
-$results = @()
-
-# Loop through each .rdp file
-foreach ($file in $rdpFiles) {
-    # Read the content of the .rdp file
-    $rdpContent = Get-Content $file.FullName
+# Read CSV and add servers
+with open('servers.csv', 'r') as csvfile:
+    csvreader = csv.DictReader(csvfile)
     
-    # Extract the computer address from the "full address" line
-    $computerAddress = $rdpContent | Where-Object { $_ -like "full address:s:*" } | ForEach-Object { $_.Split(':')[1].Trim() }
-    
-    # Store the file name (without extension) and computer address in the results
-    $results += [PSCustomObject]@{
-        Name    = $file.BaseName
-        Address = $computerAddress
-    }
-}
+    for row in csvreader:
+        server = ET.SubElement(group, 'server')
+        properties = ET.SubElement(server, 'properties')
+        
+        # Set the server properties from the CSV columns
+        name = ET.SubElement(properties, 'name')
+        name.text = row['ServerName']
+        
+        displayName = ET.SubElement(properties, 'displayName')
+        displayName.text = row['ServerName']
+        
+        address = ET.SubElement(properties, 'address')
+        address.text = row['ServerAddress']
+        
+        userName = ET.SubElement(properties, 'userName')
+        userName.text = f"{row['Domain']}\\Username"  # Replace 'Username' with actual username or leave as is
 
-# Output the results
-$results | Format-Table -AutoSize
-
-# Optionally, export to CSV
-#$results | Export-Csv -Path "$env:UserProfile\Desktop\RDP_Addresses.csv" -NoTypeInformation
+# Convert to XML string and save to a file
+tree = ET.ElementTree(rdcman)
+tree.write('imported_servers.rdg', encoding='utf-8', xml_declaration=True)
