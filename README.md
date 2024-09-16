@@ -15,19 +15,23 @@ with open('servers.csv', 'r') as csvfile:
     
     for row in csvreader:
         server = ET.SubElement(group, 'server')
+
+        # Add properties section for the name and display name
         properties = ET.SubElement(server, 'properties')
         
-        # Set the server properties from the CSV columns
         name = ET.SubElement(properties, 'name')
-        name.text = row['ServerAddress']  # Use ServerAddress for the 'name' field
+        name.text = row['ServerName']  # Server name for the 'name' field
         
         displayName = ET.SubElement(properties, 'displayName')
-        displayName.text = row['ServerName']  # Use ServerName for the 'displayName' field
+        displayName.text = row['ServerName']  # Server name for the 'displayName' field
         
-        address = ET.SubElement(properties, 'address')
+        # Set the address field outside of properties
+        address = ET.SubElement(server, 'address')
         address.text = row['ServerAddress']  # Use ServerAddress for the 'address' field
-        
-        userName = ET.SubElement(properties, 'userName')
+
+        # Add logon credentials
+        logonCredentials = ET.SubElement(server, 'logonCredentials')
+        userName = ET.SubElement(logonCredentials, 'userName')
         userName.text = f"{row['Domain']}\\Username"  # Replace 'Username' with actual username or leave as is
 
 # Convert to XML string and save to a file
