@@ -2,21 +2,33 @@ import React, { useState } from 'react';
 
 const AddCodeModal = ({ platforms, platformData, onAddCode, onClose }) => {
   const [newCode, setNewCode] = useState('');
-  const [selectedPlatform, setSelectedPlatform] = useState('');
+  const [selectedPlatforms, setSelectedPlatforms] = useState([]); // Track multiple selected platforms
 
   // Check if the new code exists on any platform
   const isCodeOnPlatform = (platform) => {
     return platformData[platform]?.some(({ code }) => code.toString() === newCode);
   };
 
+  // Handle checkbox toggle
+  const handleCheckboxChange = (platform) => {
+    if (selectedPlatforms.includes(platform)) {
+      setSelectedPlatforms(selectedPlatforms.filter(p => p !== platform));
+    } else {
+      setSelectedPlatforms([...selectedPlatforms, platform]);
+    }
+  };
+
   // Handle adding the code
   const handleAddCode = () => {
-    if (!selectedPlatform || !newCode) return;
-    
-    // Call the onAddCode function passed from the parent to actually add the code
-    onAddCode(selectedPlatform, newCode);
+    if (!selectedPlatforms.length || !newCode) return;
+
+    // Call the onAddCode function for each selected platform
+    selectedPlatforms.forEach(platform => {
+      onAddCode(platform, newCode);
+    });
+
     setNewCode(''); // Reset the input field
-    setSelectedPlatform(''); // Reset the platform selection
+    setSelectedPlatforms([]); // Reset the platform selection
     onClose(); // Close the modal
   };
 
@@ -34,16 +46,15 @@ const AddCodeModal = ({ platforms, platformData, onAddCode, onClose }) => {
           className="w-full p-2 border rounded mb-4"
         />
 
-        {/* Radio buttons for platforms */}
+        {/* Checkboxes for platforms */}
         <div className="mb-4">
-          <h3 className="font-semibold mb-2">Select Platform</h3>
+          <h3 className="font-semibold mb-2">Select Platforms</h3>
           {platforms.map((platform) => (
             <label key={platform} className="block mb-2">
               <input
-                type="radio"
-                name="platform"
+                type="checkbox"
                 value={platform}
-                onChange={(e) => setSelectedPlatform(e.target.value)}
+                onChange={() => handleCheckboxChange(platform)}
                 disabled={isCodeOnPlatform(platform)}  // Disable if the code exists on this platform
               />
               <span className={isCodeOnPlatform(platform) ? 'text-gray-400' : ''}>
@@ -58,8 +69,8 @@ const AddCodeModal = ({ platforms, platformData, onAddCode, onClose }) => {
           <button onClick={onClose} className="px-4 py-2 mr-2 bg-gray-300 rounded">Cancel</button>
           <button
             onClick={handleAddCode}
-            className={`px-4 py-2 bg-blue-500 text-white rounded ${!selectedPlatform || !newCode ? 'opacity-50 cursor-not-allowed' : ''}`}
-            disabled={!selectedPlatform || !newCode}  // Disable if no platform selected or no code entered
+            className={`px-4 py-2 bg-blue-500 text-white rounded ${!selectedPlatforms.length || !newCode ? 'opacity-50 cursor-not-allowed' : ''}`}
+            disabled={!selectedPlatforms.length || !newCode}  // Disable if no platform selected or no code entered
           >
             Add Code
           </button>
