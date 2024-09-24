@@ -1,88 +1,72 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useState } from 'react';
 
-const PlatformCodes = () => {
-  const [platformData, setPlatformData] = useState({});
-  const [searchQuery, setSearchQuery] = useState('');  // Search query state
+const AddCodeModal = ({ platforms, platformData, onAddCode, onClose }) => {
+  const [newCode, setNewCode] = useState('');
+  const [selectedPlatform, setSelectedPlatform] = useState('');
 
-  useEffect(() => {
-    axios.get('http://localhost:5000/platform-codes')
-      .then(response => {
-        const data = response.data;
-
-        // Group by platform and sort codes
-        const groupedData = data.reduce((acc, { platform, id, code }) => {
-          if (!acc[platform]) {
-            acc[platform] = [];
-          }
-          acc[platform].push({ id, code });
-          return acc;
-        }, {});
-
-        // Sort codes for each platform as numbers
-        Object.keys(groupedData).forEach(platform => {
-          groupedData[platform].sort((a, b) => a.code - b.code);
-        });
-
-        setPlatformData(groupedData);
-      })
-      .catch(error => {
-        console.error('Error fetching data:', error);
-      });
-  }, []);
-
-  // Handle the search query input
-  const handleSearch = (event) => {
-    setSearchQuery(event.target.value);
+  // Check if the new code exists on any platform
+  const isCodeOnPlatform = (platform) => {
+    return platformData[platform]?.some(({ code }) => code.toString() === newCode);
   };
 
-  // Filter platformData based on search query
-  const filteredPlatformData = Object.keys(platformData).reduce((acc, platform) => {
-    const filteredCodes = platformData[platform].filter(({ code }) =>
-      code.toString().includes(searchQuery) // Check if code includes search query
-    );
+  // Handle adding the code
+  const handleAddCode = () => {
+    if (!selectedPlatform || !newCode) return;
     
-    if (filteredCodes.length > 0) {
-      acc[platform] = filteredCodes;
-    }
-    
-    return acc;
-  }, {});
+    // Call the onAddCode function passed from the parent to actually add the code
+    onAddCode(selectedPlatform, newCode);
+    setNewCode(''); // Reset the input field
+    setSelectedPlatform(''); // Reset the platform selection
+    onClose(); // Close the modal
+  };
 
   return (
-    <div className="container mx-auto py-8">
-      <h1 className="text-2xl font-bold mb-6">Platform Codes</h1>
-      
-      {/* Search Bar */}
-      <input
-        type="text"
-        placeholder="Search codes..."
-        value={searchQuery}
-        onChange={handleSearch}
-        className="mb-6 p-2 border rounded w-full"
-      />
+    <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50">
+      <div className="bg-white p-6 rounded-md w-96">
+        <h2 className="text-xl font-bold mb-4">Add New Code</h2>
 
-      <div className="grid grid-cols-4 gap-4">
-        {Object.keys(filteredPlatformData).map(platform => (
-          <div key={platform} className="border p-4">
-            <h2 className="font-semibold mb-2">{platform}</h2>
-            <ul>
-              {filteredPlatformData[platform].map(({ id, code }) => (
-                <div key={id} className="flex justify-between items-center">
-                  <li className="text-sm">{code}</li>
-                  <button 
-                    onClick={() => handleDelete(id, code)} 
-                    className="text-red-500 hover:text-red-700 ml-4">
-                    X
-                  </button>
-                </div>
-              ))}
-            </ul>
-          </div>
-        ))}
+        {/* Input for new code */}
+        <input
+          type="text"
+          value={newCode}
+          onChange={(e) => setNewCode(e.target.value)}
+          placeholder="Enter new code"
+          className="w-full p-2 border rounded mb-4"
+        />
+
+        {/* Radio buttons for platforms */}
+        <div className="mb-4">
+          <h3 className="font-semibold mb-2">Select Platform</h3>
+          {platforms.map((platform) => (
+            <label key={platform} className="block mb-2">
+              <input
+                type="radio"
+                name="platform"
+                value={platform}
+                onChange={(e) => setSelectedPlatform(e.target.value)}
+                disabled={isCodeOnPlatform(platform)}  // Disable if the code exists on this platform
+              />
+              <span className={isCodeOnPlatform(platform) ? 'text-gray-400' : ''}>
+                {platform} {isCodeOnPlatform(platform) && "(Code exists)"}
+              </span>
+            </label>
+          ))}
+        </div>
+
+        {/* Action buttons */}
+        <div className="flex justify-end">
+          <button onClick={onClose} className="px-4 py-2 mr-2 bg-gray-300 rounded">Cancel</button>
+          <button
+            onClick={handleAddCode}
+            className={`px-4 py-2 bg-blue-500 text-white rounded ${!selectedPlatform || !newCode ? 'opacity-50 cursor-not-allowed' : ''}`}
+            disabled={!selectedPlatform || !newCode}  // Disable if no platform selected or no code entered
+          >
+            Add Code
+          </button>
+        </div>
       </div>
     </div>
   );
 };
 
-export default PlatformCodes;
+export default AddCodeModal;
