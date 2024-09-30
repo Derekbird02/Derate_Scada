@@ -2,13 +2,16 @@ import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 
 const ExportToExcel = ({ data }) => {
-  // Group emcodes by platform
   const groupDataByPlatform = (data) => {
     const groupedData = {};
+
+    // Check that data is correctly structured
+    console.log('Raw data:', data);
 
     // Assuming data is an object with platform names as keys
     Object.keys(data).forEach((platformName) => {
       const platformArray = data[platformName];
+      console.log(`Platform: ${platformName}`, platformArray);
 
       if (!groupedData[platformName]) {
         groupedData[platformName] = [];
@@ -20,6 +23,8 @@ const ExportToExcel = ({ data }) => {
       });
     });
 
+    console.log('Grouped Data:', groupedData);
+
     // Create array of arrays for Excel export
     const platformNames = Object.keys(groupedData);
     const maxLength = Math.max(...Object.values(groupedData).map(arr => arr.length));
@@ -29,12 +34,22 @@ const ExportToExcel = ({ data }) => {
       return platformNames.map((platformName) => groupedData[platformName][index] || "");
     });
 
+    console.log('Rows for Excel:', rows);
+
     // Add platform names as the header row
     return [platformNames, ...rows];
   };
 
   const exportToExcel = () => {
     const groupedData = groupDataByPlatform(data);
+
+    // Check if grouped data is empty or has values
+    console.log('Data to export:', groupedData);
+
+    if (groupedData.length === 0) {
+      alert('No data to export');
+      return;
+    }
 
     // Create a new workbook and worksheet
     const workbook = XLSX.utils.book_new();
