@@ -1,83 +1,58 @@
-import React, { useState } from 'react';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
-const AddCodeModal = ({ platforms, platformData, onAddCode, onClose }) => {
-  const [newCode, setNewCode] = useState('');
-  const [selectedPlatforms, setSelectedPlatforms] = useState([]); // Track multiple selected platforms
+const ExportToExcel = ({ data }) => {
+  // Group the emcodes by platform
+  const groupDataByPlatform = (data) => {
+    const groupedData = {};
 
-  // Check if the new code exists on any platform
-  const isCodeOnPlatform = (platform) => {
-    return platformData[platform]?.some(({ code }) => code.toString() === newCode);
-  };
-
-  // Handle checkbox toggle
-  const handleCheckboxChange = (platform) => {
-    if (selectedPlatforms.includes(platform)) {
-      setSelectedPlatforms(selectedPlatforms.filter(p => p !== platform));
-    } else {
-      setSelectedPlatforms([...selectedPlatforms, platform]);
-    }
-  };
-
-  // Handle adding the code
-  const handleAddCode = () => {
-    if (!selectedPlatforms.length || !newCode) return;
-
-    // Call the onAddCode function for each selected platform
-    selectedPlatforms.forEach(platform => {
-      onAddCode(platform, newCode);
+    data.forEach((item) => {
+      const { emcode, platform } = item;
+      if (!groupedData[platform]) {
+        groupedData[platform] = [];
+      }
+      groupedData[platform].push(emcode);
     });
 
-    setNewCode(''); // Reset the input field
-    setSelectedPlatforms([]); // Reset the platform selection
-    onClose(); // Close the modal
+    // Convert grouped data into an array of rows where each platform is a column
+    const platforms = Object.keys(groupedData);
+    const maxLength = Math.max(...Object.values(groupedData).map(arr => arr.length));
+    
+    // Create rows with emcodes under respective platforms
+    const rows = Array.from({ length: maxLength }, (_, index) => {
+      return platforms.map((platform) => groupedData[platform][index] || "");
+    });
+
+    // Add platform names as the header row
+    return [platforms, ...rows];
+  };
+
+  const exportToExcel = () => {
+    const groupedData = groupDataByPlatform(data);
+
+    // Create a new workbook and worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.aoa_to_sheet(groupedData);
+
+    // Append the worksheet to the workbook
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+
+    // Generate the Excel file
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+
+    // Save the Excel file
+    const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
+    saveAs(blob, 'platform_emcodes.xlsx');
   };
 
   return (
-    <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50">
-      <div className="bg-white p-6 rounded-md w-96">
-        <h2 className="text-xl font-bold mb-4">Add New Code</h2>
-
-        {/* Input for new code */}
-        <input
-          type="text"
-          value={newCode}
-          onChange={(e) => setNewCode(e.target.value)}
-          placeholder="Enter new code"
-          className="w-full p-2 border rounded mb-4"
-        />
-
-        {/* Checkboxes for platforms */}
-        <div className="mb-4">
-          <h3 className="font-semibold mb-2">Select Platforms</h3>
-          {platforms.map((platform) => (
-            <label key={platform} className="block mb-2">
-              <input
-                type="checkbox"
-                value={platform}
-                onChange={() => handleCheckboxChange(platform)}
-                disabled={isCodeOnPlatform(platform)}  // Disable if the code exists on this platform
-              />
-              <span className={isCodeOnPlatform(platform) ? 'text-gray-400' : ''}>
-                {platform} {isCodeOnPlatform(platform) && "(Code exists)"}
-              </span>
-            </label>
-          ))}
-        </div>
-
-        {/* Action buttons */}
-        <div className="flex justify-end">
-          <button onClick={onClose} className="px-4 py-2 mr-2 bg-gray-300 rounded">Cancel</button>
-          <button
-            onClick={handleAddCode}
-            className={`px-4 py-2 bg-blue-500 text-white rounded ${!selectedPlatforms.length || !newCode ? 'opacity-50 cursor-not-allowed' : ''}`}
-            disabled={!selectedPlatforms.length || !newCode}  // Disable if no platform selected or no code entered
-          >
-            Add Code
-          </button>
-        </div>
-      </div>
-    </div>
+    <button
+      onClick={exportToExcel}
+      className="px-4 py-2 bg-green-500 text-white rounded-md"
+    >
+      Export to Excel
+    </button>
   );
 };
 
-export default AddCodeModal;
+export default ExportToExcel;
