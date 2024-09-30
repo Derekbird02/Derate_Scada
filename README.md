@@ -2,29 +2,35 @@ import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 
 const ExportToExcel = ({ data }) => {
-  // Group the emcodes by platform
+  // Group emcodes by platform
   const groupDataByPlatform = (data) => {
     const groupedData = {};
 
-    data.forEach((item) => {
-      const { emcode, platform } = item;
-      if (!groupedData[platform]) {
-        groupedData[platform] = [];
+    // Assuming data is an object with platform names as keys
+    Object.keys(data).forEach((platformName) => {
+      const platformArray = data[platformName];
+
+      if (!groupedData[platformName]) {
+        groupedData[platformName] = [];
       }
-      groupedData[platform].push(emcode);
+
+      // Extract emcodes for the platform
+      platformArray.forEach((item) => {
+        groupedData[platformName].push(item.emcode);
+      });
     });
 
-    // Convert grouped data into an array of rows where each platform is a column
-    const platforms = Object.keys(groupedData);
+    // Create array of arrays for Excel export
+    const platformNames = Object.keys(groupedData);
     const maxLength = Math.max(...Object.values(groupedData).map(arr => arr.length));
     
     // Create rows with emcodes under respective platforms
     const rows = Array.from({ length: maxLength }, (_, index) => {
-      return platforms.map((platform) => groupedData[platform][index] || "");
+      return platformNames.map((platformName) => groupedData[platformName][index] || "");
     });
 
     // Add platform names as the header row
-    return [platforms, ...rows];
+    return [platformNames, ...rows];
   };
 
   const exportToExcel = () => {
