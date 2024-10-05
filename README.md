@@ -1,16 +1,8 @@
-Here’s a draft for your end-of-year summary:
+Here are brief sentences for each behavioral aspect:
 
-End-of-Year Summary
+	•	Innovation: I consistently seek out new ways to enhance processes and contribute to projects, such as my work with automation procedures and developing new features in the AIO application.
+	•	Customer: I prioritize customer needs by ensuring that the solutions I develop, such as the DNR list and BOP SCADA, directly address operational challenges and improve user experience.
+	•	Lean: I focus on optimizing workflows and minimizing waste by leveraging automation and refining key procedures to streamline our operational processes.
+	•	One Team: I actively collaborate with cross-functional teams, ensuring that we work together towards shared goals, such as improving the efficiency of BOP systems and supporting L2 operations.
+	•	Accountable: I take ownership of my projects, from concept to completion, ensuring that they meet high standards of quality and deliver on their intended outcomes.
 
-This year, I have made significant strides in my professional development, focusing on both expanding my knowledge and contributing to key projects within the company.
-
-	•	L2 Procedures & BOP Scope: I have successfully familiarized myself with all L2 procedures, ensuring a comprehensive understanding of operations. Additionally, I have gained in-depth knowledge of the entire BOP scope, which has improved my ability to oversee and contribute to the relevant processes.
-	•	Automation Procedures: As part of my ongoing development, I have been learning automation procedures, which has enhanced my ability to streamline workflows and contribute to the automation initiatives within our department.
-	•	AIO Application Projects: I have taken an active role in developing and improving several critical projects within our AIO application, including:
-	•	Hub Cracks: Worked on the hub cracks feature, ensuring accurate tracking and resolution.
-	•	BOP SCADA: Contributed to the BOP SCADA project, providing valuable data and insights to enhance operational efficiency.
-	•	DNR List: Assisted in the development of the DNR list, improving the process for tracking and managing important data.
-
-These experiences have allowed me to improve my technical and operational skills, and I look forward to continuing to make meaningful contributions in the upcoming year.
-
-Would you like to make any adjustments?
