@@ -1,8 +1,16 @@
-Here are brief sentences for each behavioral aspect:
+# Read the first file and create a dictionary mapping numbers to names
+number_name_map = {}
 
-	•	Innovation: I consistently seek out new ways to enhance processes and contribute to projects, such as my work with automation procedures and developing new features in the AIO application.
-	•	Customer: I prioritize customer needs by ensuring that the solutions I develop, such as the DNR list and BOP SCADA, directly address operational challenges and improve user experience.
-	•	Lean: I focus on optimizing workflows and minimizing waste by leveraging automation and refining key procedures to streamline our operational processes.
-	•	One Team: I actively collaborate with cross-functional teams, ensuring that we work together towards shared goals, such as improving the efficiency of BOP systems and supporting L2 operations.
-	•	Accountable: I take ownership of my projects, from concept to completion, ensuring that they meet high standards of quality and deliver on their intended outcomes.
+with open('file1.txt', 'r') as file1:
+    for line in file1:
+        number, name, severity = line.strip().split('@')
+        number_name_map[number] = name
 
+# Read the second file and find corresponding names
+with open('file2.txt', 'r') as file2:
+    for number in file2:
+        number = number.strip()  # Remove any extra spaces or newline
+        if number in number_name_map:
+            print(f'{number}: {number_name_map[number]}')
+        else:
+            print(f'{number}: Not found in file1')
