@@ -1,16 +1,34 @@
-# Read the first file and create a dictionary mapping numbers to names
-number_name_map = {}
+<Box
+  sx={{
+    backgroundColor: 'gray.50', // bg-gray-50
+    border: '1px solid',        // border
+    borderColor: 'gray.300',    // border-gray-300
+    lineHeight: 'none',         // leading-none
+    color: 'gray.900',          // text-gray-900
+    fontSize: '0.875rem',       // text-sm
+    borderRadius: '0.5rem',     // rounded-lg
+    width: '100%',              // w-full
+    padding: '0.625rem',        // p-2.5
 
-with open('file1.txt', 'r') as file1:
-    for line in file1:
-        number, name, severity = line.strip().split('@')
-        number_name_map[number] = name
+    '&:focus': {
+      ring: 1,                  // focus:ring-primary-500
+      ringColor: 'primary.500',
+      borderColor: 'primary.500', // focus:border-primary-500
+    },
 
-# Read the second file and find corresponding names
-with open('file2.txt', 'r') as file2:
-    for number in file2:
-        number = number.strip()  # Remove any extra spaces or newline
-        if number in number_name_map:
-            print(f'{number}: {number_name_map[number]}')
-        else:
-            print(f'{number}: Not found in file1')
+    // Dark mode styles
+    '&.dark': {
+      backgroundColor: 'gray.700',  // dark:bg-gray-700
+      borderColor: 'gray.600',      // dark:border-gray-600
+      placeholder: {
+        color: 'gray.400',         // dark:placeholder-gray-400
+      },
+      color: 'white',               // dark:text-white
+      '&:focus': {
+        ring: 1,                    // dark:focus:ring-primary-500
+        ringColor: 'primary.500',
+        borderColor: 'primary.500', // dark:focus:border-primary-500
+      },
+    },
+  }}
+/>
