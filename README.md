@@ -1,34 +1,47 @@
-<Box
-  sx={{
-    backgroundColor: 'gray.50', // bg-gray-50
-    border: '1px solid',        // border
-    borderColor: 'gray.300',    // border-gray-300
-    lineHeight: 'none',         // leading-none
-    color: 'gray.900',          // text-gray-900
-    fontSize: '0.875rem',       // text-sm
-    borderRadius: '0.5rem',     // rounded-lg
-    width: '100%',              // w-full
-    padding: '0.625rem',        // p-2.5
+const handleSelect = (e) => {
+  const id = Number(e.target.value);
+  setSelectedId(id);
 
-    '&:focus': {
-      ring: 1,                  // focus:ring-primary-500
-      ringColor: 'primary.500',
-      borderColor: 'primary.500', // focus:border-primary-500
-    },
+  const filteredSteps = stepsData.filter((step) => step.id === id && step.env === selectedEnv);
 
-    // Dark mode styles
-    '&.dark': {
-      backgroundColor: 'gray.700',  // dark:bg-gray-700
-      borderColor: 'gray.600',      // dark:border-gray-600
-      placeholder: {
-        color: 'gray.400',         // dark:placeholder-gray-400
-      },
-      color: 'white',               // dark:text-white
-      '&:focus': {
-        ring: 1,                    // dark:focus:ring-primary-500
-        ringColor: 'primary.500',
-        borderColor: 'primary.500', // dark:focus:border-primary-500
-      },
-    },
-  }}
-/>
+  if (selectedView === "Nodes") {
+    const nodeMap = new Map();
+    let yOffset = 0; // Track Y position per level
+    const levelMap = new Map(); // Track nodes per level
+
+    // Create nodes
+    const newNodes = filteredSteps.map((step) => {
+      const parentStep = filteredSteps.find((s) => s.steponsuccess === step.stepid || s.steponfailure === step.stepid);
+      const level = parentStep ? (levelMap.get(parentStep.stepid) || 0) + 1 : 0;
+
+      // Adjust position based on level and prevent overlap
+      const xPosition = (levelMap.get(level) || 0) * 200;
+      const yPosition = level * 150;
+
+      levelMap.set(level, (levelMap.get(level) || 0) + 1);
+      levelMap.set(step.stepid, level);
+
+      const node = {
+        id: step.stepid.toString(),
+        type: "custom",
+        data: { label: step.stepfunction, description: step.description },
+        position: { x: xPosition, y: yPosition },
+      };
+      nodeMap.set(step.stepid, node);
+      return node;
+    });
+
+    // Create edges
+    const newEdges = filteredSteps.flatMap((step) => [
+      step.steponsuccess !== null
+        ? { id: `s-${step.stepid}`, source: step.stepid.toString(), target: step.steponsuccess.toString(), animated: true, style: { stroke: "green" } }
+        : null,
+      step.steponfailure !== null
+        ? { id: `f-${step.stepid}`, source: step.stepid.toString(), target: step.steponfailure.toString(), animated: true, style: { stroke: "red" } }
+        : null,
+    ]).filter(Boolean);
+
+    setNodes(newNodes);
+    setEdges(newEdges);
+  }
+};
