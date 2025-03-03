@@ -18,9 +18,17 @@ const DataDisplay = () => {
 
         const result = await response.json();
         console.log("API Response:", result); // Debugging log
-        
+
         if (Array.isArray(result.data)) {
-          setData(result.data);
+          // Filter for items where at least one dataPoint has keyName "Status" and value "Active"
+          const filteredData = result.data.filter(item =>
+            Array.isArray(item.dataPoints) &&
+            item.dataPoints.some(point => 
+              point.keyName === "Status" && point.values?.[0]?.data?.[0]?.value === "Active"
+            )
+          );
+
+          setData(filteredData);
         } else {
           console.error("Unexpected data format:", result);
           setData([]); // Prevent errors by setting an empty array
@@ -74,7 +82,7 @@ const DataDisplay = () => {
             ) : (
               <tr>
                 <td colSpan="4" className="p-4 text-center text-gray-500">
-                  No data available
+                  No active data points found
                 </td>
               </tr>
             )}
@@ -86,4 +94,3 @@ const DataDisplay = () => {
 };
 
 export default DataDisplay;
-
