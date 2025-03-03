@@ -1,47 +1,28 @@
-const handleSelect = (e) => {
-  const id = Number(e.target.value);
-  setSelectedId(id);
+import requests
+from requests.auth import HTTPBasicAuth
+import json
 
-  const filteredSteps = stepsData.filter((step) => step.id === id && step.env === selectedEnv);
+def fetch_data():
+    username = "geroc.roteam@ge.com"
+    password = "R@Cdn$2030R@Cdn$2030"
+    url = "https://api.ptp.energy/v1/markets/operations/endpoints/Outage-Summary/data?definitions=Ticket%20Item&begin=2025-02-21&end=2025-03-03"
 
-  if (selectedView === "Nodes") {
-    const nodeMap = new Map();
-    let yOffset = 0; // Track Y position per level
-    const levelMap = new Map(); // Track nodes per level
+    try:
+        response = requests.get(url, auth=HTTPBasicAuth(username, password))
+        response.raise_for_status()  # Raise an error for HTTP errors (4xx and 5xx)
+        
+        data = response.json()  # Get response as JSON
+        
+        # Save to a JSON file
+        with open("response.json", "w") as json_file:
+            json.dump(data, json_file, indent=4)
+        
+        return data
+    except requests.exceptions.RequestException as e:
+        print("Error fetching data:", e)
+        return None
 
-    // Create nodes
-    const newNodes = filteredSteps.map((step) => {
-      const parentStep = filteredSteps.find((s) => s.steponsuccess === step.stepid || s.steponfailure === step.stepid);
-      const level = parentStep ? (levelMap.get(parentStep.stepid) || 0) + 1 : 0;
-
-      // Adjust position based on level and prevent overlap
-      const xPosition = (levelMap.get(level) || 0) * 200;
-      const yPosition = level * 150;
-
-      levelMap.set(level, (levelMap.get(level) || 0) + 1);
-      levelMap.set(step.stepid, level);
-
-      const node = {
-        id: step.stepid.toString(),
-        type: "custom",
-        data: { label: step.stepfunction, description: step.description },
-        position: { x: xPosition, y: yPosition },
-      };
-      nodeMap.set(step.stepid, node);
-      return node;
-    });
-
-    // Create edges
-    const newEdges = filteredSteps.flatMap((step) => [
-      step.steponsuccess !== null
-        ? { id: `s-${step.stepid}`, source: step.stepid.toString(), target: step.steponsuccess.toString(), animated: true, style: { stroke: "green" } }
-        : null,
-      step.steponfailure !== null
-        ? { id: `f-${step.stepid}`, source: step.stepid.toString(), target: step.steponfailure.toString(), animated: true, style: { stroke: "red" } }
-        : null,
-    ]).filter(Boolean);
-
-    setNodes(newNodes);
-    setEdges(newEdges);
-  }
-};
+# Example usage
+if __name__ == "__main__":
+    data = fetch_data()
+    print(data)
