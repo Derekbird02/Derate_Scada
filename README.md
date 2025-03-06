@@ -10,15 +10,17 @@ private string getNonResetEventsNew(string controllerType, string platform)
         string jsonContent = File.ReadAllText(filePath);
         var eventDictionary = JsonConvert.DeserializeObject<Dictionary<string, object>>(jsonContent);
 
-        if (eventDictionary == null || 
-            !eventDictionary.ContainsKey("Reference") || 
-            !eventDictionary.ContainsKey("Events"))
+        if (eventDictionary == null)
+            return "Invalid JSON structure";
+
+        if (!eventDictionary.TryGetValue("Reference", out var referenceObj) || referenceObj == null ||
+            !eventDictionary.TryGetValue("Events", out var eventsObj) || eventsObj == null)
         {
             return "Invalid JSON structure";
         }
 
-        var referenceData = JsonConvert.DeserializeObject<Dictionary<string, string>>(eventDictionary["Reference"]?.ToString() ?? "");
-        var eventsData = JsonConvert.DeserializeObject<Dictionary<string, string>>(eventDictionary["Events"]?.ToString() ?? "");
+        var referenceData = JsonConvert.DeserializeObject<Dictionary<string, string>>(referenceObj.ToString() ?? "");
+        var eventsData = JsonConvert.DeserializeObject<Dictionary<string, string>>(eventsObj.ToString() ?? "");
 
         if (referenceData == null || eventsData == null)
             return "Error parsing JSON data";
