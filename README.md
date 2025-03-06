@@ -1,51 +1,34 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using Newtonsoft.Json;
-
-public class EventFetcher
+private string getNonResetEventsNew(string controllerType, string platform)
 {
-    private Dictionary<string, string> referenceData;
-    private Dictionary<string, string> eventsData;
+    string filePath = "platform_data.json";
 
-    public EventFetcher(string jsonFilePath)
+    if (!File.Exists(filePath))
+        return "File Not Found";
+    try
     {
-        LoadJsonData(jsonFilePath);
-    }
+        string jsonContent = File.ReadAllText(filePath);
+        var eventDictionary = JsonConvert.DeserializeObject<Dictionary<string, object>>(jsonContent);
+        Dictionary<string, string>? referenceData = JsonConvert.DeserializeObject<Dictionary<string, string>>(eventDictionary["Reference"].ToString());
+        Dictionary<string, string>? eventsData = JsonConvert.DeserializeObject<Dictionary<string, string>>(eventDictionary["Events"].ToString());
+        string key = $"{platform}|{controllerType}";
 
-    private void LoadJsonData(string jsonFilePath)
-    {
-        if (!File.Exists(jsonFilePath))
+        if (!referenceData.TryGetValue(key, out string newplat))
         {
-            throw new FileNotFoundException("JSON file not found: " + jsonFilePath);
+            Console.WriteLine($"No matching newPlat found for Model: {platform}, Controller: {controllerType}");
+            return "";
         }
 
-        string jsonContent = File.ReadAllText(jsonFilePath);
-        var jsonData = JsonConvert.DeserializeObject<Dictionary<string, object>>(jsonContent);
+        if (!eventsData.TryGetValue(newplat, out string emcodes))
+        {
+            Console.WriteLine($"No events found for newPlat: {newplat}");
+            return "";
+        }
 
-        // Deserialize Reference data
-        referenceData = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonData["Reference"].ToString());
-
-        // Deserialize Events data
-        eventsData = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonData["Events"].ToString());
+        return emcodes;
     }
-
-    public List<string> GetEvents(string model, string controller)
+    catch (Exception ex)
     {
-        string key = $"{model}|{controller}";  // Use the same format as Python script
-
-        if (!referenceData.TryGetValue(key, out string newPlat))
-        {
-            Console.WriteLine($"No matching newPlat found for Model: {model}, Controller: {controller}");
-            return new List<string>();
-        }
-
-        if (!eventsData.TryGetValue(newPlat, out string emcodes))
-        {
-            Console.WriteLine($"No events found for newPlat: {newPlat}");
-            return new List<string>();
-        }
-
-        return new List<string>(emcodes.Split(','));
+        return "Error";
     }
+    
 }
