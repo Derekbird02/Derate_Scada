@@ -1,96 +1,51 @@
-import { useEffect, useState } from "react";
+using System;
+using System.Collections.Generic;
+using System.IO;
+using Newtonsoft.Json;
 
-const DataDisplay = () => {
-  const [data, setData] = useState(null);
+public class EventFetcher
+{
+    private Dictionary<string, string> referenceData;
+    private Dictionary<string, string> eventsData;
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const username = "yourUsername";
-      const password = "yourPassword";
-      const credentials = btoa(`${username}:${password}`);
+    public EventFetcher(string jsonFilePath)
+    {
+        LoadJsonData(jsonFilePath);
+    }
 
-      try {
-        const response = await fetch("https://powertools.api/your-endpoint", {
-          headers: {
-            Authorization: `Basic ${credentials}`,
-          },
-        });
-
-        const result = await response.json();
-        console.log("API Response:", result); // Debugging log
-
-        if (Array.isArray(result.data)) {
-          // Filter for items where at least one dataPoint has keyName "Status" and value "Active"
-          const filteredData = result.data.filter(item =>
-            Array.isArray(item.dataPoints) &&
-            item.dataPoints.some(point => 
-              point.keyName === "Status" && point.values?.[0]?.data?.[0]?.value === "Active"
-            )
-          );
-
-          setData(filteredData);
-        } else {
-          console.error("Unexpected data format:", result);
-          setData([]); // Prevent errors by setting an empty array
+    private void LoadJsonData(string jsonFilePath)
+    {
+        if (!File.Exists(jsonFilePath))
+        {
+            throw new FileNotFoundException("JSON file not found: " + jsonFilePath);
         }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        setData([]); // Handle fetch errors by setting an empty array
-      }
-    };
 
-    fetchData();
-  }, []);
+        string jsonContent = File.ReadAllText(jsonFilePath);
+        var jsonData = JsonConvert.DeserializeObject<Dictionary<string, object>>(jsonContent);
 
-  if (!data) {
-    return <div className="p-4">Loading...</div>;
-  }
+        // Deserialize Reference data
+        referenceData = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonData["Reference"].ToString());
 
-  return (
-    <div className="p-4 bg-gray-100">
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white shadow-md rounded-lg">
-          <thead className="bg-gray-200 text-gray-700">
-            <tr>
-              <th className="p-3 text-left">Outage ID</th>
-              <th className="p-3 text-left">Element</th>
-              <th className="p-3 text-left">Parent</th>
-              <th className="p-3 text-left">Data Points</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.length > 0 ? (
-              data.map((item, index) => (
-                <tr key={index} className="border-b">
-                  <td className="p-3">{item.identifier || "N/A"}</td>
-                  <td className="p-3">{item.element || "N/A"}</td>
-                  <td className="p-3">{item.parent || "N/A"}</td>
-                  <td className="p-3">
-                    {Array.isArray(item.dataPoints) && item.dataPoints.length > 0 ? (
-                      item.dataPoints.map((point, i) => (
-                        <div key={i} className="mb-2">
-                          <span className="font-semibold">{point.keyName}:</span>{" "}
-                          {point.values?.[0]?.data?.[0]?.value || "N/A"}
-                        </div>
-                      ))
-                    ) : (
-                      "No Data Points"
-                    )}
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="4" className="p-4 text-center text-gray-500">
-                  No active data points found
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-};
+        // Deserialize Events data
+        eventsData = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonData["Events"].ToString());
+    }
 
-export default DataDisplay;
+    public List<string> GetEvents(string model, string controller)
+    {
+        string key = $"{model}|{controller}";  // Use the same format as Python script
+
+        if (!referenceData.TryGetValue(key, out string newPlat))
+        {
+            Console.WriteLine($"No matching newPlat found for Model: {model}, Controller: {controller}");
+            return new List<string>();
+        }
+
+        if (!eventsData.TryGetValue(newPlat, out string emcodes))
+        {
+            Console.WriteLine($"No events found for newPlat: {newPlat}");
+            return new List<string>();
+        }
+
+        return new List<string>(emcodes.Split(','));
+    }
+}
