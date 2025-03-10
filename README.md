@@ -1,6 +1,9 @@
-private string getNonResetEventsNew(string controllerType, string platform)
+private string getNonResetEventsNew(string controllerType, string platform, string strfunctionParameters, NpgsqlConnection cnn)
 {
-    string filePath = "platform_data.json";
+    string filePath = "C:\\Users\\223042104\\Documents\\EnterpriseGit2\\platform_data.json";
+    string strResult = string.Empty;
+
+
 
     if (!File.Exists(filePath))
         return "File Not Found";
@@ -11,12 +14,12 @@ private string getNonResetEventsNew(string controllerType, string platform)
         var eventDictionary = JsonConvert.DeserializeObject<Dictionary<string, object>>(jsonContent);
 
         if (eventDictionary == null)
-            return "Invalid JSON structure";
+            return "Error";
 
         if (!eventDictionary.TryGetValue("Reference", out var referenceObj) || referenceObj == null ||
             !eventDictionary.TryGetValue("Events", out var eventsObj) || eventsObj == null)
         {
-            return "Invalid JSON structure";
+            return "Error";
         }
 
         var referenceData = JsonConvert.DeserializeObject<Dictionary<string, string>>(referenceObj.ToString() ?? "");
