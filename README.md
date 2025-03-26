@@ -1,86 +1,19 @@
-private string getNonResetEventsNew(string controllerType, string platform, string strfunctionParameters, NpgsqlConnection cnn)
-{
-    string filePath = "C:\\Users\\223042104\\Documents\\EnterpriseGit2\\platform_data.json";
-    string defaultMark = "10,24,77,98";
-    string defaultBac = "153,211";
-    string strResult = string.Empty;
-
-    if (!File.Exists(filePath))
-    {
-        strResult = GetDefaultResult(controllerType);
-    }
-    else
-    {
-        try
-        {
-            // Check for specific controller types first
-            if (controllerType.Equals("Argos", StringComparison.OrdinalIgnoreCase))
-            {
-                strResult = "100,101,102"; // Example codes for Argos
-            }
-            else if (controllerType.Equals("Windaccess", StringComparison.OrdinalIgnoreCase))
-            {
-                strResult = "200,201,202"; // Example codes for Windaccess
-            }
-            else
-            {
-                // Read and parse JSON file
-                string jsonContent = File.ReadAllText(filePath);
-                var eventDictionary = JsonConvert.DeserializeObject<Dictionary<string, object>>(jsonContent);
-
-                if (eventDictionary != null &&
-                    eventDictionary.TryGetValue("Reference", out var referenceObj) && referenceObj != null &&
-                    eventDictionary.TryGetValue("Events", out var eventsObj) && eventsObj != null)
-                {
-                    var referenceData = JsonConvert.DeserializeObject<Dictionary<string, string>>(referenceObj.ToString() ?? "");
-                    var eventsData = JsonConvert.DeserializeObject<Dictionary<string, string>>(eventsObj.ToString() ?? "");
-
-                    if (referenceData != null && eventsData != null)
-                    {
-                        string key = $"{platform}|{controllerType}";
-
-                        if (referenceData.TryGetValue(key, out string? newplat) && !string.IsNullOrEmpty(newplat) &&
-                            eventsData.TryGetValue(newplat, out string? emcodes) && !string.IsNullOrEmpty(emcodes))
-                        {
-                            strResult = emcodes;
-                        }
-                        else
-                        {
-                            Console.WriteLine($"No matching data found for Model: {platform}, Controller: {controllerType}");
-                            strResult = GetDefaultResult(controllerType);
-                        }
-                    }
-                    else
-                    {
-                        strResult = GetDefaultResult(controllerType);
-                    }
-                }
-                else
-                {
-                    strResult = GetDefaultResult(controllerType);
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error: {ex.Message}");
-            strResult = GetDefaultResult(controllerType);
-        }
-    }
-
-    // Append safety codes if needed
-    if (strfunctionParameters.Contains("SAFETY", StringComparison.OrdinalIgnoreCase))
-    {
-        strResult = string.IsNullOrEmpty(strResult) || strResult == "Error" ? "12,16,18" : $"{strResult},12,16,18";
-    }
-
-    return strResult;
-}
-
-// Helper function to get default result based on controller type
-private string GetDefaultResult(string controllerType)
-{
-    return controllerType.Equals("Mark", StringComparison.OrdinalIgnoreCase) ? "10,24,77,98" :
-           controllerType.Equals("Bachman", StringComparison.OrdinalIgnoreCase) ? "153,211" :
-           "Error";
-}
+select 
+dr.newplat as "Platform",
+count(*) as "Total Count",
+sum(case when c.notification_sent_time is null then 1 else 0 end) as "Count Resolved",
+sum(case when c.notification_sent_time notnull then 1 else 0 end) as "Count Escalated",
+round((sum(case when c.notification_sent_time notnull then 1 else 0 end)*1.0/count(*))*100,2) as "Escalation %",
+to_char( interval '1 second' * round(avg(case when c.notification_sent_time is null then extract(epoch from (close_time - createdtime)) else null end)), 'HH24:MI:SS') as "Avg ROC RTS",
+to_char( interval '1 second' * round(avg(case when c.notification_sent_time notnull then extract(epoch from (notification_sent_time - createdtime)) else null end)), 'HH24:MI:SS') as "Avg Escalate Time",
+to_char( interval '1 second' * round(avg(case when c.notification_sent_time notnull then extract(epoch from (close_time - createdtime)) else null end)), 'HH24:MI:SS') as "Avg Site RTS"
+from cases c
+inner join asset_info ai on ai.assetid = c.assetid
+left join dnrlist_reference dr on dr.model = ai.model and dr.controller = ai.controllertype
+where
+exists (select 1 from sitegroup_info si where si.siteid = ai.siteid)
+and c.responsiblealarm in ('63', '41', '335', '336', '1502', '1503', '1504', '1505', '1506', '1507', '1508', '1509', '1510', '1511', '1512', '1513', '1514', '1515', '1516', '1517', '1518', '1519', '1520', '1521')
+and $__timeFilter(createdtime) 
+and ai.controllertype not in ('WdinSess', 'SOGAR')
+and dr.newplat not in ('1xB','2xB','1X')
+group by dr.newplat
