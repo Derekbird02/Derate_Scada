@@ -1,16 +1,13 @@
-SELECT DISTINCT ON (si.siteid) 
-    si.siteid AS "Site ID",
-    si.name AS "Site Name",
-    sil.assetid AS "Asset ID",
-    sil.ts AS "Latest TS"
-FROM state_info_last sil
-INNER JOIN site_info si ON sil.siteid = si.siteid
-INNER JOIN sitegroup_info si2 ON sil.siteid = si2.siteid
-WHERE si2.sitegroupname NOT IN ('EMEA_GE10', 'EMEA_GE9')
-AND si.siteid IN (
-    SELECT sil.siteid
-    FROM state_info_last sil
-    GROUP BY sil.siteid
-    HAVING COUNT(*) = SUM(CASE WHEN sil.quality = 0 THEN 1 ELSE 0 END)
-)
-ORDER BY si.siteid, sil.ts DESC;
+import requests
+
+urls = ["https://example.com/api1", "https://example.com/api2", "https://example.com/api3"]
+
+for url in urls:
+    try:
+        res = requests.post(url, timeout=5)  # Set a timeout in seconds
+        res.raise_for_status()  # Raise an error for HTTP errors (e.g., 500, 404)
+        print(f"Success: {res.status_code} for {url}")
+    except requests.exceptions.Timeout:
+        print(f"Timeout error on {url}, skipping...")
+    except requests.exceptions.RequestException as e:
+        print(f"Request failed: {e}")
