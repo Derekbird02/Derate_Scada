@@ -1,58 +1,60 @@
-<div className="overflow-x-auto">
-  <table className="w-full table-fixed text-sm text-left text-gray-500 dark:text-gray-400">
-    <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-      <tr>
-        <th className="px-4 py-3 w-36">Park Name</th>
-        <th className="px-4 py-3 w-36">Device Name</th>
-        <th className="px-4 py-3 w-48">Variable Name</th>
-        <th className="px-4 py-3 w-32">Value</th>
-        <th className="px-4 py-3 w-40">Timestamp</th>
-      </tr>
-    </thead>
-    <tbody>
-      {paginatedData.map((item, index) => {
-        let displayValue;
-        if (item.unit == "null") {
-          if (item.value_string === "1") displayValue = "Forced True";
-          else if (item.value_string === "0") displayValue = "Forced False";
-          else displayValue = item.value_string;
-        } else {
-          displayValue = `${item.value_string} ${item.unit}`;
-        }
+import psycopg2
 
-        return (
-          <tr
-            key={index}
-            className="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
-          >
-            <td className="px-4 py-3 w-36 truncate">{item.park_name}</td>
-            <td className="px-4 py-3 w-36 truncate">{item.device_name}</td>
-            <td className="px-4 py-3 w-48 truncate">{item.variable_name}</td>
-            <td className="px-4 py-3 w-32 truncate">{displayValue}</td>
-            <td className="px-4 py-3 w-40 truncate">{item.insert_dttm}</td>
-          </tr>
+# Database Connection Configurations
+OLD_DB_CONFIG = {
+    "dbname": "old_db",
+    "user": "old_user",
+    "password": "old_password",
+    "host": "old_host",
+    "port": "5432"
+}
+
+NEW_DB_CONFIG = {
+    "dbname": "new_db",
+    "user": "new_user",
+    "password": "new_password",
+    "host": "new_host",
+    "port": "5432"
+}
+
+def sync_tables():
+    # Connect to both databases
+    old_conn = psycopg2.connect(**OLD_DB_CONFIG)
+    new_conn = psycopg2.connect(**NEW_DB_CONFIG)
+    
+    old_cur = old_conn.cursor()
+    new_cur = new_conn.cursor()
+
+    # Step 1: Fetch all rows from the old table
+    old_cur.execute("SELECT park_name, device_name, variable_name, value_string, unit FROM old_table")
+    old_data = old_cur.fetchall()
+
+    # Step 2: Insert or update records in new table
+    upsert_query = """
+        INSERT INTO new_table (park_name, device_name, variable_name, value_string, unit)
+        VALUES (%s, %s, %s, %s, %s)
+        ON CONFLICT (park_name, device_name, variable_name) 
+        DO UPDATE SET value_string = EXCLUDED.value_string, unit = EXCLUDED.unit;
+    """
+    
+    new_cur.executemany(upsert_query, old_data)
+
+    # Step 3: Delete rows that no longer exist in old_table
+    delete_query = """
+        DELETE FROM new_table
+        WHERE (park_name, device_name, variable_name) NOT IN (
+            SELECT park_name, device_name, variable_name FROM old_table
         );
-      })}
+    """
+    
+    new_cur.execute(delete_query)
 
-      {[...Array(rowsPerPage - paginatedData.length)].map((_, index) => (
-        <tr key={`empty-${index}`} className="border-b dark:border-gray-600">
-          <td className="px-4 py-3 w-36">
-            <span className="animate-pulse h-4 bg-gray-200 rounded-md dark:bg-gray-700 inline-block w-full"></span>
-          </td>
-          <td className="px-4 py-3 w-36">
-            <span className="animate-pulse h-4 bg-gray-200 rounded-md dark:bg-gray-700 inline-block w-full"></span>
-          </td>
-          <td className="px-4 py-3 w-48">
-            <span className="animate-pulse h-4 bg-gray-200 rounded-md dark:bg-gray-700 inline-block w-full"></span>
-          </td>
-          <td className="px-4 py-3 w-32">
-            <span className="animate-pulse h-4 bg-gray-200 rounded-md dark:bg-gray-700 inline-block w-full"></span>
-          </td>
-          <td className="px-4 py-3 w-40">
-            <span className="animate-pulse h-4 bg-gray-200 rounded-md dark:bg-gray-700 inline-block w-full"></span>
-          </td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
-</div>
+    # Commit changes and close connections
+    new_conn.commit()
+    old_cur.close()
+    new_cur.close()
+    old_conn.close()
+    new_conn.close()
+
+if __name__ == "__main__":
+    sync_tables()
