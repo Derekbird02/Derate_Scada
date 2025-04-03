@@ -1,31 +1,55 @@
-import { useState } from "react";
-import { Autocomplete, TextField } from "@mui/material";
+import React, { useState, useEffect } from "react";
+import TextField from '@mui/material/TextField';
+import Autocomplete from '@mui/material/Autocomplete';
 
-const DataTable = ({ data }) => {
-  const [selectedPark, setSelectedPark] = useState(null);
-  const [selectedDevice, setSelectedDevice] = useState(null);
+export default function ForcedVPage() {
+    const [selectedPark, setSelectedPark] = useState("");
+    const [selectedDevice, setSelectedDevice] = useState("");
+    const [data, setData] = useState([]);
+    
+    const parkNames = [...new Set(data.map((item) => item.park_name))];
 
-  // Extract unique park names
-  const parkNames = [...new Set(data.map((item) => item.park_name))];
-
-  // Extract devices for the selected park
-  const devicesForPark = selectedPark
+    const devicesForPark = selectedPark
     ? [...new Set(data.filter((item) => item.park_name === selectedPark).map((item) => item.device_name))]
     : [];
 
-  // Filter table data
-  const filteredData = data.filter((item) => 
-    (!selectedPark || item.park_name === selectedPark) &&
-    (!selectedDevice || item.device_name === selectedDevice)
-  );
+    const filteredData = data.filter((item) => 
+        (!selectedPark || item.park_name === selectedPark) &&
+        (!selectedDevice || item.device_name === selectedDevice)
+    );
 
-  return (
-    <div className="p-4">
-      {/* Filters */}
-      <div className="flex space-x-4 mb-4">
-        {/* Park Name Dropdown */}
-        <Autocomplete
+    const fetchData = async () => {
+        try {
+          const response = await fetch(import.meta.env.VITE_API_FORCED_VARIABLES, { method: "POST" });
+          if (!response.ok) {
+            throw new Error("Failed to fetch data");
+          }
+          const result = await response.json();
+    
+          setData(result);
+        } catch (error) {
+          console.error("Error fetching fleet data:", error);
+        }
+      };
+
+      useEffect(() => {
+        fetchData();
+      }, []);
+  
+    return (
+        <div className="mb-4 divide-y divide-gray-200 rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:divide-gray-700 dark:border-gray-700 dark:bg-gray-800 md:p-6">
+          {/* Filters */}
+          <div className="flex space-x-4 mb-4">
+            {/* Park Name Filter */}
+            <Autocomplete
           options={parkNames}
+          sx={{
+            svg: { color: "#FFFFFF" },
+            input: { color: "#FFFFFF" },
+            label: { color: "#FFFFFF" },
+          }}
+          className="block p-2.5 w-full text-sm text-gray-100 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+
           value={selectedPark}
           onChange={(event, newValue) => {
             setSelectedPark(newValue);
@@ -34,10 +58,16 @@ const DataTable = ({ data }) => {
           renderInput={(params) => <TextField {...params} label="Select Park" variant="outlined" />}
           fullWidth
         />
-
-        {/* Device Name Dropdown */}
-        <Autocomplete
+    
+    <Autocomplete
           options={devicesForPark}
+          sx={{
+            svg: { color: "#FFFFFF" },
+            input: { color: "#FFFFFF" },
+            label: { color: "#FFFFFF" },
+          }}
+          className="block p-2.5 w-full text-sm text-gray-100 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+
           value={selectedDevice}
           onChange={(event, newValue) => setSelectedDevice(newValue)}
           renderInput={(params) => (
@@ -50,53 +80,37 @@ const DataTable = ({ data }) => {
           )}
           fullWidth
         />
-      </div>
 
-      {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="min-w-full border border-gray-300">
-          <thead className="bg-gray-200">
-            <tr>
-              <th className="border px-4 py-2">Park Name</th>
-              <th className="border px-4 py-2">Device Name</th>
-              <th className="border px-4 py-2">Variable Name</th>
-              <th className="border px-4 py-2">Value</th>
-              <th className="border px-4 py-2">Unit</th>
-              <th className="border px-4 py-2">Timestamp</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredData.map((item, index) => (
-              <tr key={index} className="border">
-                <td className="border px-4 py-2">{item.park_name}</td>
-                <td className="border px-4 py-2">{item.device_name}</td>
-                <td className="border px-4 py-2">{item.variable_name}</td>
-                <td className="border px-4 py-2">{item.value_string}</td>
-                <td className="border px-4 py-2">{item.unit}</td>
-                <td className="border px-4 py-2">{item.insert_dttm}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-};
-
-// Example data
-const sampleData = [
-  { park_name: "Park A", device_name: "Device 1", variable_name: "Voltage", value_string: "220", unit: "V", insert_dttm: "2024-04-01 10:00:00" },
-  { park_name: "Park A", device_name: "Device 2", variable_name: "Current", value_string: "10", unit: "A", insert_dttm: "2024-04-01 10:01:00" },
-  { park_name: "Park B", device_name: "Device 1", variable_name: "Temperature", value_string: "30", unit: "°C", insert_dttm: "2024-04-01 10:02:00" },
-];
-
-const App = () => {
-  return (
-    <div className="max-w-5xl mx-auto mt-10">
-      <h1 className="text-2xl font-bold mb-4">Device Data Table</h1>
-      <DataTable data={sampleData} />
-    </div>
-  );
-};
-
-export default App;
+      
+          </div>
+    
+          {/* Table */}
+          <div className="overflow-x-auto">
+          <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+          <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+          <tr>
+                  <th scope="col" className="px-4 py-3">Park Name</th>
+                  <th scope="col" className="px-4 py-3">Device Name</th>
+                  <th scope="col" className="px-4 py-3">Variable Name</th>
+                  <th scope="col" className="px-4 py-3">Value</th>
+                  <th scope="col" className="px-4 py-3">Unit</th>
+                  <th scope="col" className="px-4 py-3">Timestamp</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredData.map((item, index) => (
+                  <tr key={index} className="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <td className="px-4 py-3 font-normal whitespace-nowrap dark:text-white">{item.park_name}</td>
+                    <td className="px-4 py-3 font-normal whitespace-nowrap dark:text-white">{item.device_name}</td>
+                    <td className="px-4 py-3 font-normal whitespace-nowrap dark:text-white">{item.variable_name}</td>
+                    <td className="px-4 py-3 font-normal whitespace-nowrap dark:text-white">{item.value_string}</td>
+                    <td className="px-4 py-3 font-normal whitespace-nowrap dark:text-white">{item.unit}</td>
+                    <td className="px-4 py-3 font-normal whitespace-nowrap dark:text-white">{item.insert_dttm}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      );
+}
