@@ -40,7 +40,7 @@ export default function ForcedVPage() {
       }, []);
   
     // Pie Chart Data
-    const variableCounts = data.reduce((acc, item) => {
+    const variableCounts = filteredData.reduce((acc, item) => {
         acc[item.variable_name] = (acc[item.variable_name] || 0) + 1;
         return acc;
     }, {});
@@ -136,6 +136,7 @@ export default function ForcedVPage() {
                 series={[{ data: topVariables, innerRadius: 50, outerRadius: 100 }]}
                 width={400}
                 height={300}
+                slotProps={{ legend: { hidden: true } }}
             />
           </div>
         </div>
