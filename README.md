@@ -1,30 +1,28 @@
-<tbody>
-  {paginatedData.map((item, index) => {
-    let displayValue = item.unit 
-      ? `${item.value_string} ${item.unit}` 
-      : item.value_string === "1" 
-      ? "Forced True" 
-      : "Forced False";
+// Pie Chart Data for Site Counts
+const siteCounts = filteredData.reduce((acc, item) => {
+  acc[item.park_name] = (acc[item.park_name] || 0) + 1;
+  return acc;
+}, {});
 
-    return (
-      <tr key={index} className="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
-        <td className="px-4 py-3">{item.park_name}</td>
-        <td className="px-4 py-3">{item.device_name}</td>
-        <td className="px-4 py-3">{item.variable_name}</td>
-        <td className="px-4 py-3">{displayValue}</td>
-        <td className="px-4 py-3">{item.insert_dttm}</td>
-      </tr>
-    );
-  })}
+const topSites = Object.entries(siteCounts)
+  .sort((a, b) => b[1] - a[1])
+  .slice(0, 15)
+  .map(([name, value]) => ({ id: name, value, label: name }));
 
-  {/* Add empty rows if needed */}
-  {[...Array(rowsPerPage - paginatedData.length)].map((_, index) => (
-    <tr key={`empty-${index}`} className="border-b dark:border-gray-600">
-      <td className="px-4 py-3 text-gray-400">—</td>
-      <td className="px-4 py-3 text-gray-400">—</td>
-      <td className="px-4 py-3 text-gray-400">—</td>
-      <td className="px-4 py-3 text-gray-400">—</td>
-      <td className="px-4 py-3 text-gray-400">—</td>
-    </tr>
-  ))}
-</tbody>
+// Updated Pie Charts Section
+<div className="grid grid-cols-3 gap-6 mt-6">
+  <div className="bg-white p-4 rounded-lg shadow-md">
+    <h3 className="text-center font-semibold mb-2">Top 15 Variables</h3>
+    <PieChart series={[{ data: topVariables, innerRadius: 50, outerRadius: 100 }]} width={300} height={300} />
+  </div>
+
+  <div className="bg-white p-4 rounded-lg shadow-md">
+    <h3 className="text-center font-semibold mb-2">Top 15 Devices</h3>
+    <PieChart series={[{ data: topDevices, innerRadius: 50, outerRadius: 100 }]} width={300} height={300} />
+  </div>
+
+  <div className="bg-white p-4 rounded-lg shadow-md">
+    <h3 className="text-center font-semibold mb-2">Top 15 Sites</h3>
+    <PieChart series={[{ data: topSites, innerRadius: 50, outerRadius: 100 }]} width={300} height={300} />
+  </div>
+</div>
