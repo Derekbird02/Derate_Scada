@@ -1,4 +1,8 @@
-SELECT park_name, device_name, variable_name, COUNT(*)
-FROM old_table
-GROUP BY park_name, device_name, variable_name
-HAVING COUNT(*) > 1;
+delete_query = """
+            DELETE FROM new_table
+            WHERE (park_name, device_name, variable_name) NOT IN (
+                SELECT park_name, device_name, variable_name
+                FROM old_table
+            );
+            """
+            cursor.execute(delete_query)
