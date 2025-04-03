@@ -1,47 +1,45 @@
 import React, { useState, useEffect } from "react";
-import TextField from '@mui/material/TextField';
-import Autocomplete from '@mui/material/Autocomplete';
-import Button from '@mui/material/Button';
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
+import { TextField, Autocomplete } from "@mui/material";
+import { PieChart } from '@mui/x-charts/PieChart';
 
 export default function ForcedVPage() {
     const [selectedPark, setSelectedPark] = useState("");
     const [selectedDevice, setSelectedDevice] = useState("");
     const [data, setData] = useState([]);
-    const [currentPage, setCurrentPage] = useState(1);
+    const [page, setPage] = useState(0);
     const rowsPerPage = 20;
-
+    
     const parkNames = [...new Set(data.map((item) => item.park_name))];
+
     const devicesForPark = selectedPark
-      ? [...new Set(data.filter((item) => item.park_name === selectedPark).map((item) => item.device_name))]
-      : [];
+    ? [...new Set(data.filter((item) => item.park_name === selectedPark).map((item) => item.device_name))]
+    : [];
 
     const filteredData = data.filter((item) => 
-      (!selectedPark || item.park_name === selectedPark) &&
-      (!selectedDevice || item.device_name === selectedDevice)
+        (!selectedPark || item.park_name === selectedPark) &&
+        (!selectedDevice || item.device_name === selectedDevice)
     );
 
-    const startIndex = (currentPage - 1) * rowsPerPage;
-    const paginatedData = filteredData.slice(startIndex, startIndex + rowsPerPage);
+    const paginatedData = filteredData.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
 
     const fetchData = async () => {
         try {
-            const response = await fetch(import.meta.env.VITE_API_FORCED_VARIABLES, { method: "POST" });
-            if (!response.ok) {
-                throw new Error("Failed to fetch data");
-            }
-            const result = await response.json();
-            setData(result);
+          const response = await fetch(import.meta.env.VITE_API_FORCED_VARIABLES, { method: "POST" });
+          if (!response.ok) {
+            throw new Error("Failed to fetch data");
+          }
+          const result = await response.json();
+          setData(result);
         } catch (error) {
-            console.error("Error fetching fleet data:", error);
+          console.error("Error fetching fleet data:", error);
         }
-    };
+      };
 
-    useEffect(() => {
+      useEffect(() => {
         fetchData();
-    }, []);
-
-    // Calculate top 15 most common variable names
+      }, []);
+  
+    // Pie Chart Data
     const variableCounts = data.reduce((acc, item) => {
         acc[item.variable_name] = (acc[item.variable_name] || 0) + 1;
         return acc;
@@ -50,36 +48,42 @@ export default function ForcedVPage() {
     const topVariables = Object.entries(variableCounts)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 15)
-        .map(([name, count]) => ({ name, value: count }));
-
-    const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#A28DFF", "#FF6B6B", "#4CAF50", "#FF4081", "#795548", "#2196F3", "#FFC107", "#9C27B0", "#E91E63", "#CDDC39", "#607D8B"];
-
+        .map(([name, value]) => ({ id: name, value, label: name }));
+  
     return (
         <div className="mb-4 divide-y divide-gray-200 rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:divide-gray-700 dark:border-gray-700 dark:bg-gray-800 md:p-6">
           {/* Filters */}
           <div className="flex space-x-4 mb-4">
+            {/* Park Name Filter */}
             <Autocomplete
-              options={parkNames}
-              sx={{ width: 200 }}
-              size="small"
-              value={selectedPark}
-              onChange={(event, newValue) => {
-                setSelectedPark(newValue);
-                setSelectedDevice("");
-              }}
-              renderInput={(params) => <TextField {...params} label="Select Park" variant="outlined" />}
+                options={parkNames}
+                size="small"
+                sx={{ width: 200 }}
+                value={selectedPark}
+                onChange={(event, newValue) => {
+                    setSelectedPark(newValue);
+                    setSelectedDevice(null); // Reset device selection
+                }}
+                renderInput={(params) => <TextField {...params} label="Select Park" variant="outlined" />}
             />
+    
             <Autocomplete
-              options={devicesForPark}
-              sx={{ width: 200 }}
-              size="small"
-              value={selectedDevice}
-              onChange={(event, newValue) => setSelectedDevice(newValue)}
-              renderInput={(params) => <TextField {...params} label="Select Device" variant="outlined" disabled={!selectedPark} />}
-              disabled={!selectedPark}
+                options={devicesForPark}
+                size="small"
+                sx={{ width: 200 }}
+                value={selectedDevice}
+                onChange={(event, newValue) => setSelectedDevice(newValue)}
+                renderInput={(params) => (
+                    <TextField 
+                        {...params} 
+                        label="Select Device" 
+                        variant="outlined" 
+                        disabled={!selectedPark} 
+                    />
+                )}
             />
           </div>
-
+    
           {/* Table */}
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
@@ -107,28 +111,33 @@ export default function ForcedVPage() {
               </tbody>
             </table>
           </div>
-
+          
           {/* Pagination */}
-          <div className="flex justify-between items-center mt-4">
-            <Button onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} disabled={currentPage === 1}>Previous</Button>
-            <span>Page {currentPage}</span>
-            <Button onClick={() => setCurrentPage((prev) => (startIndex + rowsPerPage < filteredData.length ? prev + 1 : prev))} disabled={startIndex + rowsPerPage >= filteredData.length}>Next</Button>
+          <div className="flex justify-center mt-4">
+            <button 
+                className="px-4 py-2 mx-2 bg-blue-500 text-white rounded disabled:opacity-50" 
+                onClick={() => setPage(page - 1)} 
+                disabled={page === 0}
+            >
+                Previous
+            </button>
+            <button 
+                className="px-4 py-2 mx-2 bg-blue-500 text-white rounded disabled:opacity-50" 
+                onClick={() => setPage(page + 1)} 
+                disabled={(page + 1) * rowsPerPage >= filteredData.length}
+            >
+                Next
+            </button>
           </div>
-
+          
           {/* Pie Chart */}
-          <div className="mt-6">
-            <h2 className="text-lg font-bold mb-4">Top 15 Most Common Variable Names</h2>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie data={topVariables} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} fill="#8884d8" label>
-                  {topVariables.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+          <div className="mt-6 flex justify-center">
+            <PieChart
+                series={[{ data: topVariables, innerRadius: 50, outerRadius: 100 }]}
+                width={400}
+                height={300}
+            />
           </div>
         </div>
-    );
+      );
 }
