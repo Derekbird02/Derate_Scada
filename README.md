@@ -383,16 +383,16 @@ const DnrListMain = () => {
         )}
 
         <div className="grid grid-cols-8 justify-center gap-2">
-          {Object.keys(filteredPlatformData)
-            .filter((platform) => {
-              if (shownList === "DNR") {
-                return platform !== "Exceptions" && platform !== "No Second Looks" && platform !== "TCC";
-              } else if (shownList === "Exceptions"){
-                return platform === "Exceptions" || platform === "TCC";
-              } else if (shownList === "No Second Looks"){
-                return platform === "No Second Looks";
-              }
-            })
+        {Object.keys(filteredPlatformData)
+    .filter((platform) => {
+      if (shownList === "DNR") {
+        return platform !== "Exceptions" && platform !== "No Second Looks";
+      } else if (shownList === "Exceptions") {
+        return platform === "Exceptions" || platform === "TCC"; // Include both Exceptions and TCC
+      } else if (shownList === "No Second Looks") {
+        return platform === "No Second Looks";
+      }
+    })
             .map((platform) => (
               <div key={platform} className="border p-4 rounded-md">
                 <h2 title={platform} className="mb-2 text-sm text-white content-center text-center border-b border-gray-700 break-words h-16 w-full">
@@ -441,12 +441,16 @@ const DnrListMain = () => {
         </div>
         {isAddModalOpen && (
           <DnrListAddModal
-            platforms={platforms}
-            platformData={platformData}
-            onAddCode={handleAddCode}
-            shownList={shownList}
-            onClose={() => setIsAddModalOpen(false)}
-          />
+          platforms={
+            shownList === "Exceptions"
+              ? ["Exceptions", "TCC"] // Pass both platforms to the modal
+              : platforms
+          }
+          platformData={platformData}
+          onAddCode={handleAddCode}
+          shownList={shownList}
+          onClose={() => setIsAddModalOpen(false)}
+        />
         )}
         {isDeleteModalOpen && (
           <DnrListDeleteModal
