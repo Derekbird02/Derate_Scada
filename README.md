@@ -1,19 +1,27 @@
-if (referenceData.TryGetValue(key, out string? newplat) && !string.IsNullOrEmpty(newplat) &&
-    eventsData.TryGetValue(newplat, out string? emcodes) && !string.IsNullOrEmpty(emcodes))
+Gui, Add, GroupBox, x8 y24 w750 h150, Active Events
+
+; Define dimensions
+startX := 16        ; Starting X inside groupbox
+startY := 40        ; Starting Y inside groupbox (below the title)
+boxWidth := 750 - 16 - 8 ; Width inside groupbox (subtract padding)
+numCheckboxes := 17
+rows := 2           ; Number of rows you want
+cols := Ceil(numCheckboxes / rows)
+cbWidth := Floor(boxWidth / cols)
+cbHeight := 24
+
+; Loop to add checkboxes
+Loop, %numCheckboxes%
 {
-    // Split EM codes
-    var emcodeList = emcodes.Split(',').ToList();
-
-    // Try to fetch and apply exceptions
-    if (eventDictionary.TryGetValue("Exceptions", out var exceptionsObj) && exceptionsObj != null)
-    {
-        var exceptionsData = JsonConvert.DeserializeObject<Dictionary<string, string>>(exceptionsObj.ToString() ?? "");
-        if (exceptionsData != null && exceptionsData.TryGetValue(newplat, out string? exceptions) && !string.IsNullOrEmpty(exceptions))
-        {
-            var exceptionList = exceptions.Split(',');
-            emcodeList = emcodeList.Except(exceptionList).ToList(); // Remove exceptions
-        }
-    }
-
-    strResult = string.Join(",", emcodeList);
+    row := Floor((A_Index - 1) / cols)
+    col := Mod((A_Index - 1), cols)
+    x := startX + (col * cbWidth)
+    y := startY + (row * cbHeight)
+    Gui, Add, Checkbox, x%x% y%y% w%cbWidth%, Checkbox %A_Index%
 }
+
+Gui, Show, , Example GUI
+Return
+
+GuiClose:
+ExitApp
