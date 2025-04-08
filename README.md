@@ -1,27 +1,28 @@
-Gui, Add, GroupBox, x8 y24 w750 h150, Active Events
+; Dimensions and padding
+groupX := 8
+groupY := 24
+groupW := 750
+groupH := 150
+padding := 8
 
-; Define dimensions
-startX := 16        ; Starting X inside groupbox
-startY := 40        ; Starting Y inside groupbox (below the title)
-boxWidth := 750 - 16 - 8 ; Width inside groupbox (subtract padding)
-numCheckboxes := 17
-rows := 2           ; Number of rows you want
-cols := Ceil(numCheckboxes / rows)
-cbWidth := Floor(boxWidth / cols)
-cbHeight := 24
+; Inner area of the groupbox
+innerX := groupX + padding
+innerY := groupY + 20        ; Account for groupbox label height
+innerW := groupW - 2 * padding
+innerH := groupH - 28        ; Subtract label and padding
 
-; Loop to add checkboxes
-Loop, %numCheckboxes%
+totalCheckboxes := 17
+idealCols := Ceil(Sqrt(totalCheckboxes))     ; Start with square layout
+idealRows := Ceil(totalCheckboxes / idealCols)
+
+cbWidth := Floor(innerW / idealCols)
+cbHeight := Floor(innerH / idealRows)
+
+Loop, %totalCheckboxes%
 {
-    row := Floor((A_Index - 1) / cols)
-    col := Mod((A_Index - 1), cols)
-    x := startX + (col * cbWidth)
-    y := startY + (row * cbHeight)
-    Gui, Add, Checkbox, x%x% y%y% w%cbWidth%, Checkbox %A_Index%
+    row := Floor((A_Index - 1) / idealCols)
+    col := Mod((A_Index - 1), idealCols)
+    x := innerX + (col * cbWidth)
+    y := innerY + (row * cbHeight)
+    Gui, Add, Checkbox, x%x% y%y% w%cbWidth% h%cbHeight%, Checkbox %A_Index%
 }
-
-Gui, Show, , Example GUI
-Return
-
-GuiClose:
-ExitApp
