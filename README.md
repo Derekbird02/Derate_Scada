@@ -1,89 +1,93 @@
-linkMap["63"]["PlatformOne"] := ""
-linkMap["63"]["PlatformTwo"] := ""
-linkMap["63"]["PlatformThree"] := ""
-linkMap["63"]["PlatformFour"] := ""
+; Define checkbox names
+names := ["Wind Fault", "Grid Loss", "Overtemp", "Undervoltage", "Overvoltage", "Pitch Error", "Yaw Error", "Vibration", "Communication Lost", 
+          "Sensor Failure", "Emergency Stop", "Converter Fault", "Gearbox Alarm", "Tower Vibration", "Blade Fault", "Cooling System", "Hydraulic Fault"]
 
-linkMap["1502"]["PlatformOne"] := ""
-linkMap["1502"]["PlatformTwo"] := ""
-linkMap["1502"]["PlatformThree"] := ""
-linkMap["1502"]["PlatformFour"] := ""
+; Define platforms
+platforms := ["Mark", "Banik", "Loral"]
 
-linkMap["1503"]["PlatformOne"] := ""
-linkMap["1503"]["PlatformTwo"] := ""
-linkMap["1503"]["PlatformThree"] := ""
-linkMap["1503"]["PlatformFour"] := ""
+; Hardcoded link map: linkMap[name][platform] := "URL"
+linkMap := {}
+for _, name in names {
+    linkMap[name] := {}
+}
 
-linkMap["1504"]["PlatformOne"] := ""
-linkMap["1504"]["PlatformTwo"] := ""
-linkMap["1504"]["PlatformThree"] := ""
-linkMap["1504"]["PlatformFour"] := ""
+; Example hardcoded URLs (replace these with your actual links)
+linkMap["Wind Fault"]["Mark"] := "https://mark.com/wind-fault"
+linkMap["Wind Fault"]["Banik"] := "https://banik.net/wf"
+linkMap["Wind Fault"]["Loral"] := "https://loral.org/wind"
 
-linkMap["1505"]["PlatformOne"] := ""
-linkMap["1505"]["PlatformTwo"] := ""
-linkMap["1505"]["PlatformThree"] := ""
-linkMap["1505"]["PlatformFour"] := ""
+linkMap["Grid Loss"]["Mark"] := "https://mark.com/grid-loss"
+linkMap["Grid Loss"]["Banik"] := "https://banik.net/grid"
+linkMap["Grid Loss"]["Loral"] := "https://loral.org/grid-loss"
 
-linkMap["1506"]["PlatformOne"] := ""
-linkMap["1506"]["PlatformTwo"] := ""
-linkMap["1506"]["PlatformThree"] := ""
-linkMap["1506"]["PlatformFour"] := ""
+; Add hardcoded links for other names...
+; For demo, fallback default:
+for _, name in names {
+    for _, platform in platforms {
+        if (!linkMap[name][platform]) {
+            ; fallback or warning URL
+            linkMap[name][platform] := "https://example.com/" . platform . "/" . StrReplace(name, " ", "_")
+        }
+    }
+}
 
-linkMap["1507"]["PlatformOne"] := ""
-linkMap["1507"]["PlatformTwo"] := ""
-linkMap["1507"]["PlatformThree"] := ""
-linkMap["1507"]["PlatformFour"] := ""
+; GUI Setup
+Gui, Add, GroupBox, x8 y24 w750 h150, Active Events
 
-linkMap["1508/1509/1510"]["PlatformOne"] := ""
-linkMap["1508/1509/1510"]["PlatformTwo"] := ""
-linkMap["1508/1509/1510"]["PlatformThree"] := ""
-linkMap["1508/1509/1510"]["PlatformFour"] := ""
+groupX := 8, groupY := 24, groupW := 750, groupH := 150, padding := 8
+innerX := groupX + padding, innerY := groupY + 20
+innerW := groupW - 2 * padding, innerH := groupH - 28
 
-linkMap["1511"]["PlatformOne"] := ""
-linkMap["1511"]["PlatformTwo"] := ""
-linkMap["1511"]["PlatformThree"] := ""
-linkMap["1511"]["PlatformFour"] := ""
+totalCheckboxes := names.Length()
+idealCols := Ceil(Sqrt(totalCheckboxes))
+idealRows := Ceil(totalCheckboxes / idealCols)
+cbWidth := Floor(innerW / idealCols)
+cbHeight := Floor(innerH / idealRows)
 
-linkMap["1512"]["PlatformOne"] := ""
-linkMap["1512"]["PlatformTwo"] := ""
-linkMap["1512"]["PlatformThree"] := ""
-linkMap["1512"]["PlatformFour"] := ""
+Loop, %totalCheckboxes%
+{
+    name := names[A_Index]
+    varName := "cb" . A_Index
+    row := Floor((A_Index - 1) / idealCols)
+    col := Mod((A_Index - 1), idealCols)
+    x := innerX + (col * cbWidth)
+    y := innerY + (row * cbHeight)
+    Gui, Add, Checkbox, x%x% y%y% w%cbWidth% h%cbHeight% v%varName%, %name%
+}
 
-linkMap["1513/1514"]["PlatformOne"] := ""
-linkMap["1513/1514"]["PlatformTwo"] := ""
-linkMap["1513/1514"]["PlatformThree"] := ""
-linkMap["1513/1514"]["PlatformFour"] := ""
+Gui, Add, DropDownList, x20 y205 w315 vPlatformChoice, Mark|Banik|Loral
+Gui, Add, Button, x350 y205 w100 gBuildLinks, Build Links
+Gui, Add, Edit, x20 y240 w730 h100 vLinkOutput ReadOnly
 
-linkMap["1515"]["PlatformOne"] := ""
-linkMap["1515"]["PlatformTwo"] := ""
-linkMap["1515"]["PlatformThree"] := ""
-linkMap["1515"]["PlatformFour"] := ""
+Gui, Show, , Platform Event Links
+Return
 
-linkMap["1516"]["PlatformOne"] := ""
-linkMap["1516"]["PlatformTwo"] := ""
-linkMap["1516"]["PlatformThree"] := ""
-linkMap["1516"]["PlatformFour"] := ""
+BuildLinks:
+    Gui, Submit, NoHide
+    selectedPlatform := PlatformChoice
+    output := ""
 
-linkMap["1517"]["PlatformOne"] := ""
-linkMap["1517"]["PlatformTwo"] := ""
-linkMap["1517"]["PlatformThree"] := ""
-linkMap["1517"]["PlatformFour"] := ""
+    Loop, %names.Length()%
+    {
+        name := names[A_Index]
+        varName := "cb" . A_Index
+        GuiControlGet, isChecked,, %varName%
+        if (isChecked) {
+            link := linkMap[name][selectedPlatform]
+            ; Only include if both name and link are not empty
+            if (link != "" && name != "") {
+                output .= "[" . name . "] Link: " . link . "`n"
+            }
+        }
+    }
 
-linkMap["1518"]["PlatformOne"] := ""
-linkMap["1518"]["PlatformTwo"] := ""
-linkMap["1518"]["PlatformThree"] := ""
-linkMap["1518"]["PlatformFour"] := ""
+    ; Handle case when no checkbox is checked
+    if (output = "") {
+        output := "No events selected."
+    }
 
-linkMap["1519"]["PlatformOne"] := ""
-linkMap["1519"]["PlatformTwo"] := ""
-linkMap["1519"]["PlatformThree"] := ""
-linkMap["1519"]["PlatformFour"] := ""
+    GuiControl,, LinkOutput, %output%
+Return
 
-linkMap["1520"]["PlatformOne"] := ""
-linkMap["1520"]["PlatformTwo"] := ""
-linkMap["1520"]["PlatformThree"] := ""
-linkMap["1520"]["PlatformFour"] := ""
-
-linkMap["1521"]["PlatformOne"] := ""
-linkMap["1521"]["PlatformTwo"] := ""
-linkMap["1521"]["PlatformThree"] := ""
-linkMap["1521"]["PlatformFour"] := ""
+GuiClose:
+ExitApp
