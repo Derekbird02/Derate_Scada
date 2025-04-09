@@ -1,34 +1,7 @@
-BuildLinks:
-Gui, Submit, NoHide
-selectedPlatform := Trim(PlatformChoice)
-output := "DEBUG INFO:`n"
-output .= "Selected platform: [" selectedPlatform "]`n"
-
-Loop % names.Length() {
-    idx := A_Index
-    name := Trim(names[idx])
-    cbVar := "cb" . idx
-    GuiControlGet, isChecked,, %cbVar%
-    output .= "Checking event: " name " | Checked: " isChecked "`n"
-
-    if (isChecked) {
-        if (linkMap.HasKey(name)) {
-            if (linkMap[name].HasKey(selectedPlatform)) {
-                link := linkMap[name][selectedPlatform]
-                output .= "Found link for [" name "][" selectedPlatform "]: " link "`n"
-                if (link != "") {
-                    output .= "[" . name . "] -> " . link . "`n"
-                } else {
-                    output .= "[" . name . "] has an empty link for platform [" selectedPlatform "]`n"
-                }
-            } else {
-                output .= "Platform [" selectedPlatform "] not found in linkMap for name [" name "]`n"
-            }
-        } else {
-            output .= "Name [" name "] not found in linkMap.`n"
-        }
-    }
-}
-
-GuiControl,, ResultBox, %output%
-return
+DEBUG INFO:
+Selected platform: [Cypress]
+Checking event: 63 | Checked: 1
+Found link for [63][Cypress]: 
+[63] has an empty link for platform [Cypress]
+Checking event: 64 | Checked: 0
+Checking event: 65 | Checked: 0
