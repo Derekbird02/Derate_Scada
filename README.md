@@ -1,15 +1,15 @@
-#SingleInstance Force
+#SingleInstance, Force
 
-; Define names and platforms
 names := ["63", "64", "65"]
-platforms := ["2.0-2.4-107/116", "2.5-2.8-116/127", "Sierra", "Cypress"]
+platforms := ["Sierra", "Cypress", "2.0-2.4-107/116", "2.5-2.8-116/127"]
 
-; Initialize linkMap properly
 linkMap := {}
+
+; Initialize linkMap with all platforms
 for _, name in names {
     linkMap[name] := {}
     for _, platform in platforms {
-        linkMap[name][platform] := ""  ; Default to blank
+        linkMap[name][platform] := ""  ; Default empty string
     }
 }
 
@@ -19,50 +19,50 @@ linkMap["64"]["Sierra"] := "Test2"
 linkMap["64"]["Cypress"] := "Test3"
 linkMap["65"]["2.5-2.8-116/127"] := "Test4"
 
-; Build the GUI
-Gui, Add, Text,, Select Platform:
-Gui, Add, DropDownList, vPlatformChoice w250, % platforms[1] "|" platforms[2] "|" platforms[3] "|" platforms[4]
-
-Gui, Add, Text,, Select Names:
-yPos := 90
+Gui, Add, Text,, Select Events:
 Loop % names.Length() {
-    Gui, Add, Checkbox, vcb%A_Index% x20 y%yPos%, % names[A_Index]
-    yPos += 30
+    idx := A_Index
+    Gui, Add, Checkbox, vcb%idx%, % "Event " names[idx]
 }
 
-Gui, Add, Button, x20 y250 w120 h30 gBuildLinks, Generate
-Gui, Show,, Link Generator
-Return
+platformOptions := ""
+for _, p in platforms {
+    platformOptions .= p "|"
+}
+StringTrimRight, platformOptions, platformOptions, 1
+
+Gui, Add, Text,, Select Platform:
+Gui, Add, DropDownList, vPlatformChoice w250, %platformOptions%
+
+Gui, Add, Button, gBuildLinks, Build Links
+Gui, Add, Edit, vResultBox w400 h150 ReadOnly
+
+Gui, Show,, Link Builder
+return
 
 BuildLinks:
 Gui, Submit, NoHide
-selectedPlatform := PlatformChoice
+selectedPlatform := Trim(PlatformChoice)
 output := ""
-
-; Debug print
-MsgBox, You selected platform: %selectedPlatform%
 
 Loop % names.Length() {
     idx := A_Index
-    name := names[idx]
+    name := Trim(names[idx])
     cbVar := "cb" . idx
     GuiControlGet, isChecked,, %cbVar%
     if (isChecked) {
-        ; Debug: Show current lookup
-        MsgBox, Checking: %name% + %selectedPlatform%
         link := linkMap[name][selectedPlatform]
-        MsgBox, Link for [%name%][%selectedPlatform%] is: %link%
         if (link != "") {
             output .= "[" . name . "] -> " . link . "`n"
         }
     }
 }
 
-if (output = "")
+if (output = "") {
     output := "No events selected or no links found for selected platform."
-
-MsgBox, %output%
-Return
+}
+GuiControl,, ResultBox, %output%
+return
 
 GuiClose:
 ExitApp
