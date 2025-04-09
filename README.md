@@ -1,7 +1,16 @@
-DEBUG INFO:
-Selected platform: [Cypress]
-Checking event: 63 | Checked: 1
-Found link for [63][Cypress]: 
-[63] has an empty link for platform [Cypress]
-Checking event: 64 | Checked: 0
-Checking event: 65 | Checked: 0
+array := {}
+
+array["63"] := {}
+
+array["63"]["2.0-2.4-107/116"] := ""
+array["63"]["2.5-2.8-116/127"] := ""
+array["63"]["Sierra"] := "Hyperlink"
+array["63"]["Cypress"] := ""
+
+
+tester := "63"
+tested := "Sierra"
+MsgBox % "Test 1 " . array["63"]["Sierra"] 
+MsgBox % "Test 2 " . array[tester][tested] 
+
+
