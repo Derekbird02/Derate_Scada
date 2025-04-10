@@ -2,15 +2,11 @@ array := {}
 
 array["63"] := {}
 
-array["63"]["2.0-2.4-107/116"] := ""
-array["63"]["2.5-2.8-116/127"] := ""
-array["63"]["Sierra"] := "Hyperlink"
-array["63"]["Cypress"] := ""
+array["63"]["Dog"] := "Carin Terrier"
 
+numValue := "63"
+petValue := "Dog"
 
-tester := "63"
-tested := "Sierra"
-MsgBox % "Test 1 " . array["63"]["Sierra"] 
-MsgBox % "Test 2 " . array[tester][tested] 
-
+MsgBox % "Test 1: " . (array["63"]["Dog"])
+MsgBox % "Test 2: " . (value[numValue][petValue])
 
