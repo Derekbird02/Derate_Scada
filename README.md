@@ -1,75 +1,24 @@
-array[63][1] := "" 
-array[1502][1] := "" 
-array[1503][1] := "" 
-array[1504][1] := "" 
-array[1505][1] := "" 
-array[1506][1] := "" 
-array[1507][1] := "" 
-array[1508910][1] := "" 
-array[1511][1] := "" 
-array[1512][1] := "" 
-array[151314][1] := "" 
-array[1515][1] := "" 
-array[1516][1] := "" 
-array[1517][1] := "" 
-array[1518][1] := "" 
-array[1519][1] := "" 
-array[1520][1] := "" 
-array[1521][1] := "" 
+Gui, Add, GroupBox, x380 y184 w378 h171 cBlack, Reason
 
-array[63][2] := "" 
-array[1502][2] := "" 
-array[1503][2] := "" 
-array[1504][2] := "" 
-array[1505][2] := "" 
-array[1506][2] := "" 
-array[1507][2] := "" 
-array[1508910][2] := "" 
-array[1511][2] := "" 
-array[1512][2] := "" 
-array[151314][2] := "" 
-array[1515][2] := "" 
-array[1516][2] := "" 
-array[1517][2] := "" 
-array[1518][2] := "" 
-array[1519][2] := "" 
-array[1520][2] := "" 
-array[1521][2] := "" 
+; Coordinates relative to GroupBox's origin
+groupX := 390
+groupY := 204
 
-array[63][3] := "" 
-array[1502][3] := "" 
-array[1503][3] := "" 
-array[1504][3] := "" 
-array[1505][3] := "" 
-array[1506][3] := "" 
-array[1507][3] := "" 
-array[1508910][3] := "" 
-array[1511][3] := "" 
-array[1512][3] := "" 
-array[151314][3] := "" 
-array[1515][3] := "" 
-array[1516][3] := "" 
-array[1517][3] := "" 
-array[1518][3] := "" 
-array[1519][3] := "" 
-array[1520][3] := "" 
-array[1521][3] := "" 
+; Column 1 checkboxes
+Gui, Add, CheckBox, x%groupX% y%groupY% w160, Option 1
+Gui, Add, CheckBox, x%groupX% y%groupY%+30 w160, Option 2
+Gui, Add, CheckBox, x%groupX% y%groupY%+60 w160, Option 3
 
-array[63][4] := "" 
-array[1502][4] := "" 
-array[1503][4] := "" 
-array[1504][4] := "" 
-array[1505][4] := "" 
-array[1506][4] := "" 
-array[1507][4] := "" 
-array[1508910][4] := "" 
-array[1511][4] := "" 
-array[1512][4] := "" 
-array[151314][4] := "" 
-array[1515][4] := "" 
-array[1516][4] := "" 
-array[1517][4] := "" 
-array[1518][4] := "" 
-array[1519][4] := "" 
-array[1520][4] := "" 
-array[1521][4] := "" 
+; Column 2 checkboxes
+Gui, Add, CheckBox, x%groupX%+180 y%groupY% w160, Option 4
+Gui, Add, CheckBox, x%groupX%+180 y%groupY%+30 w160, Option 5
+Gui, Add, CheckBox, x%groupX%+180 y%groupY%+60 w160, Option 6
+
+; Textbox spanning the width near the bottom
+Gui, Add, Edit, x%groupX% y%groupY%+100 w358 h50 vReasonInput,
+
+Gui, Show,, Reason Form
+return
+
+GuiClose:
+ExitApp
