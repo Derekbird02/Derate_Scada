@@ -2,9 +2,16 @@ import React, { useState, useMemo } from "react";
 import {
   TextField,
   Autocomplete,
-  IconButton,
   Menu,
   MenuItem,
+  Modal,
+  Box,
+  Typography,
+  Select,
+  MenuItem as MuiMenuItem,
+  FormControl,
+  InputLabel,
+  Button,
 } from "@mui/material";
 
 export default function FrequencyPage({ frequencyData }) {
@@ -13,7 +20,11 @@ export default function FrequencyPage({ frequencyData }) {
   const [anchorEl, setAnchorEl] = useState(null);
   const [menuIndex, setMenuIndex] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [openModal, setOpenModal] = useState(false);
+  const [editData, setEditData] = useState(null);
+
   const rowsPerPage = 15;
+  const numberOptions = Array.from({ length: 41 }, (_, i) => i);
 
   const emcodeOptions = useMemo(() => {
     return [...new Set(frequencyData.map((item) => item.emcode))];
@@ -47,6 +58,31 @@ export default function FrequencyPage({ frequencyData }) {
     setMenuIndex(null);
   };
 
+  const handleEditClick = (row) => {
+    setEditData({ ...row });
+    setOpenModal(true);
+    handleMenuClose();
+  };
+
+  const handleUpdate = () => {
+    console.log("Update:", {
+      emcode: editData.emcode,
+      platform: editData.platform,
+      one_day: editData.one_day,
+      one_week: editData.one_week,
+    });
+    setOpenModal(false);
+  };
+
+  const handleDelete = () => {
+    const { emcode, platform } = editData;
+    const confirmed = window.confirm(`Are you sure you want to delete EM Code ${emcode} on platform ${platform}?`);
+    if (confirmed) {
+      console.log("Delete:", { emcode, platform });
+      setOpenModal(false);
+    }
+  };
+
   return (
     <div id="reviews" role="tabpanel">
       <section className="bg-gray-50 dark:bg-gray-900 py-3 sm:py-5">
@@ -67,12 +103,7 @@ export default function FrequencyPage({ frequencyData }) {
                   setCurrentPage(1);
                 }}
                 size="small"
-                sx={{
-                  width: 300,
-                  svg: { color: "#FFFFFF" },
-                  input: { color: "#FFFFFF" },
-                  label: { color: "#FFFFFF" },
-                }}
+                sx={{ width: 300, svg: { color: "#FFFFFF" }, input: { color: "#FFFFFF" }, label: { color: "#FFFFFF" } }}
                 renderInput={(params) => (
                   <TextField {...params} label="Select EM Code" variant="outlined" />
                 )}
@@ -85,12 +116,7 @@ export default function FrequencyPage({ frequencyData }) {
                   setCurrentPage(1);
                 }}
                 size="small"
-                sx={{
-                  width: 300,
-                  svg: { color: "#FFFFFF" },
-                  input: { color: "#FFFFFF" },
-                  label: { color: "#FFFFFF" },
-                }}
+                sx={{ width: 300, svg: { color: "#FFFFFF" }, input: { color: "#FFFFFF" }, label: { color: "#FFFFFF" } }}
                 renderInput={(params) => (
                   <TextField {...params} label="Select Platform" variant="outlined" />
                 )}
@@ -110,10 +136,7 @@ export default function FrequencyPage({ frequencyData }) {
                 </thead>
                 <tbody>
                   {paginatedData.map((row, index) => (
-                    <tr
-                      key={index}
-                      className="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
-                    >
+                    <tr key={index} className="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
                       <td className="px-4 py-2">{row.emcode}</td>
                       <td className="px-4 py-2">{row.platform}</td>
                       <td className="px-4 py-2">{row.one_day}</td>
@@ -126,27 +149,8 @@ export default function FrequencyPage({ frequencyData }) {
                           ⋮
                         </button>
                         {menuIndex === index && (
-                          <Menu
-                            anchorEl={anchorEl}
-                            open={Boolean(anchorEl)}
-                            onClose={handleMenuClose}
-                          >
-                            <MenuItem
-                              onClick={() => {
-                                console.log("Edit clicked:", row);
-                                handleMenuClose();
-                              }}
-                            >
-                              Edit
-                            </MenuItem>
-                            <MenuItem
-                              onClick={() => {
-                                console.log("Delete clicked:", row);
-                                handleMenuClose();
-                              }}
-                            >
-                              Delete
-                            </MenuItem>
+                          <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
+                            <MenuItem onClick={() => handleEditClick(row)}>Edit</MenuItem>
                           </Menu>
                         )}
                       </td>
@@ -182,6 +186,52 @@ export default function FrequencyPage({ frequencyData }) {
             </div>
           </div>
         </div>
+
+        {/* Modal */}
+        <Modal open={openModal} onClose={() => setOpenModal(false)}>
+          <Box sx={{ p: 4, maxWidth: 400, bgcolor: "background.paper", margin: "10% auto", borderRadius: 2 }}>
+            <Typography variant="h6" gutterBottom>EM Code: {editData?.emcode}</Typography>
+            <Typography variant="h6" gutterBottom>Platform: {editData?.platform}</Typography>
+            <FormControl fullWidth margin="normal">
+              <InputLabel>1 Day</InputLabel>
+              <Select
+                value={editData?.one_day || 0}
+                onChange={(e) => setEditData({ ...editData, one_day: e.target.value })}
+              >
+                {numberOptions.map((num) => (
+                  <MuiMenuItem key={num} value={num}>{num}</MuiMenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl fullWidth margin="normal">
+              <InputLabel>7 Day</InputLabel>
+              <Select
+                value={editData?.one_week || 0}
+                onChange={(e) => setEditData({ ...editData, one_week: e.target.value })}
+              >
+                {numberOptions.map((num) => (
+                  <MuiMenuItem key={num} value={num}>{num}</MuiMenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleUpdate}
+                disabled={
+                  editData?.one_day === paginatedData[menuIndex]?.one_day &&
+                  editData?.one_week === paginatedData[menuIndex]?.one_week
+                }
+              >
+                Update
+              </Button>
+              <Button variant="outlined" color="error" onClick={handleDelete}>
+                Delete
+              </Button>
+            </Box>
+          </Box>
+        </Modal>
       </section>
     </div>
   );
