@@ -1,4 +1,1 @@
-curl -X POST http://your-grafana-url/api/invites ^
--H "Authorization: Bearer YOUR_API_KEY" ^
--H "Content-Type: application/json" ^
--d "{\"invites\": [{\"email\": \"user@example.com\", \"name\": \"User One\", \"role\": \"Viewer\"}]}"
+The following list is not an officially approved or finalized set of faults by all relevant teams or stakeholders. It is intended primarily for use within the RoC automation framework to identify and respond to frequently occurring faults. This list is subject to change and should not be considered a comprehensive or authoritative reference for fault classification or operational decision-making.
