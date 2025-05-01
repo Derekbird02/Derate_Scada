@@ -43,6 +43,10 @@ def fetch_data():
             formatted_data = []
             for item in filtered_data:
                 dp = item.get("dataPoints", [])
+
+                available_mw_value = extract_value(dp, "AvailableMWs")
+                ticket_type = "Tr" if available_mw_value == "" else "Ou"
+
                 formatted_data.append({
                     "identifier": item.get("identifier", ""),
                     "parent": item.get("parent", ""),
@@ -55,10 +59,11 @@ def fetch_data():
                     "resourceID": extract_value(dp, "ResourceID"),
                     "groupID": extract_value(dp, "GroupID"),
                     "outageID": extract_value(dp, "OutageID"),
-                    "availableMWs": extract_value(dp, "AvailableMWs"),
+                    "availableMWs": available_mw_value,
                     "tpsStatus": extract_value(dp, "TPSStatus"),
                     "tpsOutageID": extract_value(dp, "TPSOutageID"),
                     "type": extract_value(dp, "Type"),
+                    "ticketType": ticket_type
                 })
 
             # Save to JSON
