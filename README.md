@@ -1,50 +1,42 @@
-using PureCloudPlatform.Client.V2.Api;
-using PureCloudPlatform.Client.V2.Client;
-using PureCloudPlatform.Client.V2.Model;
+const fetchData = async () => {
+        const today = new Date().toISOString().split("T")[0];
+        const fetchURL = `https://api.ptp.energy/v1/markets/operations/endpoints/Outage-Summary/data?definitions=Ticket%20Item&begin=${today}&end=${today}`;
+        console.log(fetchURL);
+        const userName = "test@test.com"
+        const passwrod = "test123"
+        const credentials = btoa(`${userName}:${passwrod}`);
 
-namespace DOC.Data
-{
-    public class DOCData
-    {
-        private string clientId = "YOUR_CLIENT_ID";
-        private string clientSecret = "YOUR_CLIENT_SECRET";
-        private string region = "us-east-1"; // use your region, e.g., us-west-2, eu-west-1, etc.
+        
+  
+        try {
+          const response = await fetch(fetchURL, {
+            headers: {
+              Authorization: `Basic ${credentials}`,
+            },
+          });
+  
+          const result = await response.json();
+        console.log("API Response:", result); // Debugging log
 
-        public void OpenDd()
-        {
-            // Your existing logic here
+        if (Array.isArray(result.data)) {
+          // Filter for items where at least one dataPoint has keyName "Status" and value "Active"
+          const filteredData = result.data.filter(item =>
+            Array.isArray(item.dataPoints) &&
+            !item.dataPoints.some(point => 
+              (point.keyName === "TPSStatus" && point.values?.[0]?.data?.[0]?.value === "Completed") ||
+              (point.keyName === "ResourceType" && ["Transmission", "Storage"].includes(point.values?.[0]?.data?.[0]?.value))
+            )
+          );
+
+          setData(filteredData);
+        } else {
+          console.error("Unexpected data format:", result);
+          setData([]); // Prevent errors by setting an empty array
         }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setData([]); // Handle fetch errors by setting an empty array
+      }
+    };
 
-        private void Authenticate()
-        {
-            var apiClient = new ApiClient($"https://api.{region}.mypurecloud.com");
-            Configuration.Default.ApiClient = apiClient;
-            apiClient.PostToken(clientId, clientSecret);
-        }
-
-        public void MakeCall(string phoneNumber)
-        {
-            Authenticate();
-
-            var api = new ConversationsApi();
-
-            var callRequest = new CreateCallRequest
-            {
-                PhoneNumber = phoneNumber,
-                CallFrom = "+11234567890",      // your verified caller ID number
-                CallerId = "Rick",
-                CallFlowId = "YOUR_CALL_FLOW_ID" // Flow with the TTS message
-            };
-
-            try
-            {
-                var result = api.PostConversationsCalls(callRequest);
-                Console.WriteLine($"Call started, conversation ID: {result.Id}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error making call: " + ex.Message);
-            }
-        }
-    }
-}
+    fetchData();
