@@ -1,42 +1,42 @@
-const fetchData = async () => {
-        const today = new Date().toISOString().split("T")[0];
-        const fetchURL = `https://api.ptp.energy/v1/markets/operations/endpoints/Outage-Summary/data?definitions=Ticket%20Item&begin=${today}&end=${today}`;
-        console.log(fetchURL);
-        const userName = "test@test.com"
-        const passwrod = "test123"
-        const credentials = btoa(`${userName}:${passwrod}`);
+import requests
+from datetime import datetime
+import base64
+import json
 
-        
-  
-        try {
-          const response = await fetch(fetchURL, {
-            headers: {
-              Authorization: `Basic ${credentials}`,
-            },
-          });
-  
-          const result = await response.json();
-        console.log("API Response:", result); // Debugging log
+def fetch_data():
+    today = datetime.today().strftime('%Y-%m-%d')
+    fetch_url = f"https://api.ptp.energy/v1/markets/operations/endpoints/Outage-Summary/data?definitions=Ticket%20Item&begin={today}&end={today}"
+    print("Fetching URL:", fetch_url)
 
-        if (Array.isArray(result.data)) {
-          // Filter for items where at least one dataPoint has keyName "Status" and value "Active"
-          const filteredData = result.data.filter(item =>
-            Array.isArray(item.dataPoints) &&
-            !item.dataPoints.some(point => 
-              (point.keyName === "TPSStatus" && point.values?.[0]?.data?.[0]?.value === "Completed") ||
-              (point.keyName === "ResourceType" && ["Transmission", "Storage"].includes(point.values?.[0]?.data?.[0]?.value))
-            )
-          );
+    username = "test@test.com"
+    password = "test123"
+    credentials = f"{username}:{password}"
+    encoded_credentials = base64.b64encode(credentials.encode()).decode()
 
-          setData(filteredData);
-        } else {
-          console.error("Unexpected data format:", result);
-          setData([]); // Prevent errors by setting an empty array
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        setData([]); // Handle fetch errors by setting an empty array
-      }
-    };
+    headers = {
+        "Authorization": f"Basic {encoded_credentials}"
+    }
 
-    fetchData();
+    try:
+        response = requests.get(fetch_url, headers=headers)
+        response.raise_for_status()
+        result = response.json()
+        print("API Response:", json.dumps(result, indent=2))
+
+        if isinstance(result.get('data'), list):
+            filtered_data = [
+                item for item in result['data']
+                if isinstance(item.get('dataPoints'), list) and
+                not any(
+                    (point.get('keyName') == "TPSStatus" and point.get('values', [{}])[0].get('data', [{}])[0].get('value') == "Completed") or
+                    (point.get('keyName') == "ResourceType" and point.get('values', [{}])[0].get('data', [{}])[0].get('value') in ["Transmission", "Storage"])
+                    for point in item['dataPoints']
+                )
+            ]
+            print("Filtered Data:", json.dumps(filtered_data, indent=2))
+        else:
+            print("Unexpected data format:", result)
+    except requests.exceptions.RequestException as e:
+        print("Error fetching data:", e)
+
+fetch_data()
