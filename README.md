@@ -1,32 +1,20 @@
 private bool checkFreqnecy(string model, string controller, string emCode, int dayFreq, int weekFreq)
 {
-    string json = @"{
-        ""Reference"": {
-            ""ModelX|Ctrl01"": ""PlatformA"",
-            ""ModelY|Ctrl02"": ""PlatformB""
-        },
-        ""Frequency"": {
-            ""EM001"": {
-                ""PlatformA"": {
-                    ""one_day"": 10,
-                    ""one_week"": 50
-                }
-            }
-        }
-    }";
-
-    var jsonData = Newtonsoft.Json.Linq.JObject.Parse(json);
+    if (_jsonData == null)
+        return false;
 
     string key = $"{model}|{controller}";
-    string platform = jsonData["Reference"]?[key]?.ToString();
+    string platform = _jsonData["Reference"]?[key]?.ToString();
 
-    if (platform == null) return false;
+    if (string.IsNullOrEmpty(platform))
+        return false;
 
-    var freqData = jsonData["Frequency"]?[emCode]?[platform];
-    if (freqData == null) return false;
+    var freq = _jsonData["Frequency"]?[emCode]?[platform];
+    if (freq == null)
+        return false;
 
-    int oneDay = freqData.Value<int>("one_day");
-    int oneWeek = freqData.Value<int>("one_week");
+    int oneDay = freq.Value<int?>("one_day") ?? int.MaxValue;
+    int oneWeek = freq.Value<int?>("one_week") ?? int.MaxValue;
 
     return dayFreq >= oneDay || weekFreq >= oneWeek;
 }
