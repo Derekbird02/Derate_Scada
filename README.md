@@ -1,25 +1,21 @@
-private bool checkFreqnecy(string model, string controller, string emCode, int dayFreq, int weekFreq)
-{
-    if (_jsonData == null) return false;
+from datetime import datetime, timedelta
 
-    if (!_jsonData.TryGetValue("Reference", out var referenceObj)) return false;
-    if (!(referenceObj is JObject reference)) return false;
+def get_15_minute_block_range():
+    now = datetime.now()
 
-    string key = $"{model}|{controller}";
-    string platform = reference[key]?.ToString();
-    if (string.IsNullOrEmpty(platform)) return false;
+    # Floor to the nearest 15-minute mark
+    minute_block = (now.minute // 15) * 15
+    floored = now.replace(minute=minute_block, second=0, microsecond=0)
 
-    if (!_jsonData.TryGetValue("Frequency", out var freqObj)) return false;
-    if (!(freqObj is JObject frequency)) return false;
+    end_date = floored
+    start_date = floored - timedelta(minutes=15)
 
-    var emEntry = frequency[emCode] as JObject;
-    if (emEntry == null) return false;
+    # Convert to timestamps in milliseconds
+    start_timestamp = round(start_date.timestamp() * 1000)
+    end_timestamp = round(end_date.timestamp() * 1000)
 
-    var platformEntry = emEntry[platform] as JObject;
-    if (platformEntry == null) return false;
+    return start_timestamp, end_timestamp
 
-    int oneDay = platformEntry.Value<int?>("one_day") ?? int.MaxValue;
-    int oneWeek = platformEntry.Value<int?>("one_week") ?? int.MaxValue;
-
-    return dayFreq >= oneDay || weekFreq >= oneWeek;
-}
+# Example usage
+start_ts, end_ts = get_15_minute_block_range()
+print(f"Start: {start_ts}, End: {end_ts}")
