@@ -1,21 +1,22 @@
-from datetime import datetime, timedelta
-
-def get_15_minute_block_range():
-    now = datetime.now()
-
-    # Floor to the nearest 15-minute mark
-    minute_block = (now.minute // 15) * 15
-    floored = now.replace(minute=minute_block, second=0, microsecond=0)
-
-    end_date = floored
-    start_date = floored - timedelta(minutes=15)
-
-    # Convert to timestamps in milliseconds
-    start_timestamp = round(start_date.timestamp() * 1000)
-    end_timestamp = round(end_date.timestamp() * 1000)
-
-    return start_timestamp, end_timestamp
-
-# Example usage
-start_ts, end_ts = get_15_minute_block_range()
-print(f"Start: {start_ts}, End: {end_ts}")
+textBody += "<html>";
+textBody += "<head><style>";
+textBody += "titol { collapse; font-family: Tahoma, Geneva, sans-serif;font-size: 11px; font-weight: bold;color:#000000 }";
+textBody += "table {";
+textBody += "  font-family: Arial, Helvetica, sans-serif;";
+textBody += "  border-collapse: collapse;";
+textBody += "  width: 100%;";
+textBody += "}";
+textBody += "td, th {";
+textBody += "  border: 1px solid #ddd;";
+textBody += "  padding: 8px;";
+textBody += "}";
+textBody += "tr {border: 1px solid #005E60;background-color: #cce2e3;}";
+textBody += "th {";
+textBody += "  padding-top: 12px;";
+textBody += "  padding-bottom: 12px;";
+textBody += "  text-align: left;";
+textBody += "  background-color: #005E60;";
+textBody += "  color: white;";
+textBody += "}";
+textBody += "petit { collapse; font-family: Tahoma, Geneva, sans-serif;font-size: 8px;}";
+textBody += "</style></head>";
