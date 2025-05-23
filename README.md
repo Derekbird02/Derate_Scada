@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 const data = [
   { siteid: "121134", assetid: "123", feedername: "Feeder 1", unitnumber: "1" },
@@ -6,65 +6,78 @@ const data = [
   { siteid: "121134", assetid: "121", feedername: "Feeder 5", unitnumber: "2" },
 ];
 
-export default function FeederSelector({ siteid }) {
+export default function FeederDropdown({ siteid }) {
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [options, setOptions] = useState([]);
   const [valueToPercent, setValueToPercent] = useState([]);
+  const dropdownRef = useRef();
+
+  useEffect(() => {
+    const closeOnOutsideClick = e => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", closeOnOutsideClick);
+    return () => document.removeEventListener("mousedown", closeOnOutsideClick);
+  }, []);
 
   useEffect(() => {
     if (!siteid) return;
 
     const filtered = data.filter(item => item.siteid === siteid);
 
-    const units = Array.from(new Set(filtered.map(i => i.unitnumber))).map(unit => ({
+    const unitOptions = Array.from(new Set(filtered.map(i => i.unitnumber))).map(unit => ({
       type: 'unit',
       label: `Unit ${unit}`,
       value: `unit||${unit}`
     }));
 
-    const feeders = Array.from(
+    const feederOptions = Array.from(
       new Set(filtered.map(i => `${i.feedername}||${i.unitnumber}`))
     ).map(str => {
-      const [feedername, unit] = str.split('||');
+      const [feedername, unitnumber] = str.split('||');
       return {
         type: 'feeder',
-        label: `${feedername} (Unit ${unit})`,
-        value: `feeder||${feedername}||${unit}`
+        label: `${feedername} (Unit ${unitnumber})`,
+        value: `feeder||${feedername}||${unitnumber}`
       };
     });
 
-    setOptions([...units, ...feeders]);
+    setOptions([...unitOptions, ...feederOptions]);
   }, [siteid]);
 
-  const handleChange = (e) => {
-    const selectedValues = Array.from(e.target.selectedOptions).map(opt => opt.value);
+  const handleCheck = (value, checked) => {
+    let newSelected = [...valueToPercent];
 
-    const feedersFromUnits = selectedValues
-      .filter(val => val.startsWith("unit"))
-      .flatMap(val => {
-        const unitNum = val.split("||")[1];
-        return data
-          .filter(d => d.siteid === siteid && d.unitnumber === unitNum)
-          .map(d => ({
-            feedername: d.feedername,
-            unitnumber: d.unitnumber,
-          }));
-      });
+    if (value.startsWith("unit")) {
+      const unitnumber = value.split("||")[1];
+      const feeders = data
+        .filter(d => d.siteid === siteid && d.unitnumber === unitnumber)
+        .map(d => ({
+          feedername: d.feedername,
+          unitnumber: d.unitnumber
+        }));
 
-    const selectedFeeders = selectedValues
-      .filter(val => val.startsWith("feeder"))
-      .map(val => {
-        const [, feedername, unitnumber] = val.split("||");
-        return { feedername, unitnumber };
-      });
+      if (checked) {
+        newSelected = [...newSelected, ...feeders];
+      } else {
+        newSelected = newSelected.filter(v => v.unitnumber !== unitnumber);
+      }
+    } else if (value.startsWith("feeder")) {
+      const [, feedername, unitnumber] = value.split("||");
+      if (checked) {
+        newSelected.push({ feedername, unitnumber });
+      } else {
+        newSelected = newSelected.filter(
+          v => !(v.feedername === feedername && v.unitnumber === unitnumber)
+        );
+      }
+    }
 
-    // Combine and dedupe
-    const allSelected = [
-      ...selectedFeeders,
-      ...feedersFromUnits
-    ];
-
+    // Deduplicate
     const deduped = Array.from(
-      new Set(allSelected.map(item => `${item.feedername}||${item.unitnumber}`))
+      new Set(newSelected.map(i => `${i.feedername}||${i.unitnumber}`))
     ).map(str => {
       const [feedername, unitnumber] = str.split("||");
       return { feedername, unitnumber };
@@ -73,29 +86,42 @@ export default function FeederSelector({ siteid }) {
     setValueToPercent(deduped);
   };
 
-  return (
-    <div className="flex flex-col space-y-2">
-      <label className="text-sm font-semibold">Select Units or Feeders</label>
-      <select
-        multiple
-        className="p-2 border rounded-md"
-        onChange={handleChange}
-      >
-        {options.map((opt, index) => (
-          <option key={index} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
-      </select>
+  const isChecked = (opt) => {
+    if (opt.type === "unit") {
+      return valueToPercent.some(v => v.unitnumber === opt.value.split("||")[1]);
+    }
+    if (opt.type === "feeder") {
+      const [, feedername, unitnumber] = opt.value.split("||");
+      return valueToPercent.some(v => v.feedername === feedername && v.unitnumber === unitnumber);
+    }
+  };
 
-      <div className="text-sm text-gray-600">
-        Selected Feeders:
-        <ul className="list-disc list-inside">
-          {valueToPercent.map((v, idx) => (
-            <li key={idx}>{v.feedername} (Unit {v.unitnumber})</li>
+  return (
+    <div className="relative w-64" ref={dropdownRef}>
+      <button
+        onClick={() => setDropdownOpen(!dropdownOpen)}
+        className="w-full border border-gray-300 rounded-md px-4 py-2 text-left bg-white shadow-sm"
+      >
+        {valueToPercent.length > 0
+          ? valueToPercent.map(v => `${v.feedername} (Unit ${v.unitnumber})`).join(', ')
+          : "Select Units / Feeders"}
+      </button>
+
+      {dropdownOpen && (
+        <div className="absolute z-10 w-full mt-1 max-h-64 overflow-auto rounded-md border border-gray-300 bg-white shadow-lg p-2 space-y-2">
+          {options.map((opt, idx) => (
+            <label key={idx} className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                className="form-checkbox"
+                checked={isChecked(opt)}
+                onChange={(e) => handleCheck(opt.value, e.target.checked)}
+              />
+              <span>{opt.label}</span>
+            </label>
           ))}
-        </ul>
-      </div>
+        </div>
+      )}
     </div>
   );
 }
