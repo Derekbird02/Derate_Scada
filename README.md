@@ -1,25 +1,33 @@
-<dl className="py-4 sm:flex sm:items-start sm:justify-between sm:gap-4">
-  <dt className="whitespace-nowrap font-semibold text-gray-900 dark:text-white">
-    Site / Customer Contacts
-  </dt>
-  <dd className="mt-2 text-gray-500 dark:text-gray-400 sm:mt-0 sm:text-right w-full">
-    {editState ? (
-      <textarea
-        rows={Math.max(3, (editSite.site_contacts || '').split(/\r?\n/).length)}
-        className="w-full border border-gray-300 rounded p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-        value={editSite.site_contacts || ''}
-        onChange={e =>
-          setEditSite({ ...editSite, site_contacts: e.target.value })
-        }
-      />
-    ) : (
-      (selectedSite.site_contacts || '')
-        .split(/\r?\n/)
-        .map((line, idx) => (
-          <p key={idx} className="mb-1">
-            {line}
-          </p>
-        ))
-    )}
-  </dd>
-</dl>
+<div>
+            {[
+              "L3: Global Fleet Support Engineer",
+              "Fleet Management",
+              "Development Team",
+            ].includes(user.role) && selectedSite && (
+              <div>
+                <button
+                  type="button"
+                  onClick={()=>setEditState(!editState)}
+                  className="ml-4 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-10 h-10 inline-flex items-center justify-center dark:bg-gray-600 dark:hover:text-white"
+                  title="Edit"
+                >
+                  <svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m14.304 4.844 2.852 2.852M7 7H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4.5m2.409-9.91a2.017 2.017 0 0 1 0 2.853l-6.844 6.844L8 14l.713-3.565 6.844-6.844a2.015 2.015 0 0 1 2.852 0Z"/>
+                  </svg>
+
+                  <span className="sr-only">Edit Button</span>
+                </button>
+
+                <button
+                  type="button"
+                  className="ml-4 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-10 h-10 inline-flex items-center justify-center dark:bg-gray-600 dark:hover:text-white"
+                  title="Revisions"
+                >
+                  <svg className="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 8v8m0-8a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm0 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm6-2a2 2 0 1 1 4 0 2 2 0 0 1-4 0Zm0 0h-1a5 5 0 0 1-5-5v-.5"/>
+                  </svg>
+                  <span className="sr-only">Revision Control</span>
+                </button>
+              </div>
+            )}
+            </div>
