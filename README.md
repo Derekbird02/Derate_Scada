@@ -1,57 +1,130 @@
-<div>
-  {["Cash", "Front", "Lead"].includes(user.role) && selectedSite && (
+import React, { useState, useEffect } from 'react';
+import { PlusCircle, Trash2, Check, X } from 'lucide-react';
+
+export default function SiteDetails({ selectedSite, editState, onSave, onCancel, onEdit }) {
+  const [editSite, setEditSite] = useState(selectedSite);
+  const [activeIndex, setActiveIndex] = useState(null);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    setEditSite(selectedSite);
+    setError(null);
+  }, [selectedSite]);
+
+  const handleChange = (field) => (e) => {
+    setEditSite({ ...editSite, [field]: e.target.value });
+  };
+
+  const handleListChange = (field, index, key) => (e) => {
+    const newList = [...(editSite[field] || [])];
+    newList[index] = key ? { ...newList[index], [key]: e.target.value } : e.target.value;
+    setEditSite({ ...editSite, [field]: newList });
+  };
+
+  const addListItem = (field, template) => () => {
+    const newList = [...(editSite[field] || []), template];
+    setEditSite({ ...editSite, [field]: newList });
+  };
+
+  const removeListItem = (field, index) => () => {
+    const newList = [...(editSite[field] || [])];
+    newList.splice(index, 1);
+    setEditSite({ ...editSite, [field]: newList });
+  };
+
+  const toggleAccordion = (idx) => setActiveIndex(activeIndex === idx ? null : idx);
+
+  const isValidUrl = (url) => {
+    try {
+      new URL(url);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  };
+
+  const handleSaveClick = () => {
+    // Validation logic
+    const docsValid = (editSite.associated_documents || []).every(
+      (doc) => doc.document_name && isValidUrl(doc.document_url)
+    );
+    const outagesValid = (editSite.outage_specifics || []).every(
+      (out) => out.outage_name && isValidUrl(out.outage_url)
+    );
+    const notesValid = (editSite.site_specific_notes || []).every(note => note.trim() !== '');
+
+    if (!docsValid || !outagesValid || !notesValid) {
+      setError('All document/outage fields must be filled with a valid link. Notes cannot be blank.');
+      return;
+    }
+
+    setError(null);
+    onSave && onSave(editSite);
+  };
+
+  const handleCancelClick = () => {
+    setEditSite(selectedSite);
+    setError(null);
+    onCancel && onCancel();
+  };
+
+  const renderField = (fieldKey, label, type = 'text') => (
+    <dl className="py-4 sm:flex sm:items-center sm:justify-between sm:gap-4" key={fieldKey}>
+      <dt className="whitespace-nowrap font-semibold text-gray-900 dark:text-white">
+        {label}
+      </dt>
+      <dd className="mt-2 text-gray-500 dark:text-gray-400 sm:mt-0 sm:text-right">
+        {editState ? (
+          <input
+            type={type}
+            className="w-full max-w-xs border border-gray-300 rounded p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            value={editSite[fieldKey] || ''}
+            onChange={handleChange(fieldKey)}
+          />
+        ) : (
+          selectedSite[fieldKey]
+        )}
+      </dd>
+    </dl>
+  );
+
+  return (
     <div>
-      {!editState ? (
-        <>
+      {/* Edit Mode Controls */}
+      <div className="flex justify-end mb-4">
+        {!editState ? (
           <button
-            type="button"
-            onClick={() => setEditState(true)}
-            className="ml-4 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-10 h-10 inline-flex items-center justify-center dark:bg-gray-600 dark:hover:text-white"
-            title="Edit"
+            className="flex items-center gap-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            onClick={onEdit}
           >
-            <svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-              <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m14.304 4.844 2.852 2.852M7 7H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4.5m2.409-9.91a2.017 2.017 0 0 1 0 2.853l-6.844 6.844L8 14l.713-3.565 6.844-6.844a2.015 2.015 0 0 1 2.852 0Z"/>
-            </svg>
-            <span className="sr-only">Edit Button</span>
+            <Check size={16} /> Edit
           </button>
+        ) : (
+          <>
+            <button
+              className="flex items-center gap-1 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 mr-2"
+              onClick={handleCancelClick}
+            >
+              <X size={16} /> Cancel
+            </button>
+            <button
+              className="flex items-center gap-1 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+              onClick={handleSaveClick}
+            >
+              <Check size={16} /> Save
+            </button>
+          </>
+        )}
+      </div>
 
-          <button
-            type="button"
-            className="ml-4 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-10 h-10 inline-flex items-center justify-center dark:bg-gray-600 dark:hover:text-white"
-            title="Revisions"
-          >
-            <svg className="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-              <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 8v8m0-8a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm0 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm6-2a2 2 0 1 1 4 0 2 2 0 0 1-4 0Zm0 0h-1a5 5 0 0 1-5-5v-.5"/>
-            </svg>
-            <span className="sr-only">Revision Control</span>
-          </button>
-        </>
-      ) : (
-        <>
-          <button
-            type="button"
-            onClick={() => {
-              // your save logic
-              setEditState(false);
-            }}
-            className="ml-4 text-green-600 bg-transparent hover:bg-green-100 hover:text-green-800 rounded-lg text-sm w-10 h-10 inline-flex items-center justify-center dark:bg-gray-600 dark:hover:text-white"
-            title="Save"
-          >
-            💾
-            <span className="sr-only">Save</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setEditState(false)}
-            className="ml-4 text-red-600 bg-transparent hover:bg-red-100 hover:text-red-800 rounded-lg text-sm w-10 h-10 inline-flex items-center justify-center dark:bg-gray-600 dark:hover:text-white"
-            title="Cancel"
-          >
-            ✖
-            <span className="sr-only">Cancel</span>
-          </button>
-        </>
+      {error && (
+        <div className="text-red-600 font-semibold mb-4 text-sm">{error}</div>
       )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+        {/* General Information */}
+        {/* ...rest of your existing grid content...*/}
+      </div>
     </div>
-  )}
-</div>
+  );
+}
