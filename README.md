@@ -1,29 +1,26 @@
 <div id="reviews" role="tabpanel">
       <section className="bg-gray-50 dark:bg-gray-900 py-3 sm:py-5">
         <div className="mx-auto max-w-screen-xl px-4 2xl:px-0">
-          <div className="mb-4 divide-y divide-gray-200 rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:divide-gray-700 dark:border-gray-700 dark:bg-gray-800 md:p-6">
+          <div className="mb-4 border divide-gray-200 rounded-lg  bg-white p-4 shadow-sm dark:divide-gray-700 dark:border-gray-700 dark:bg-gray-800 md:p-6">
 
             <div className="items-center justify-between pb-4 md:flex">
               <h2 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white md:mb-0">
-                Development Team - Active Ticket Overview
+                EM Code Frequency Limits - Per Platform
                 <span className="ms-2 text-lg font-medium text-gray-500 dark:text-gray-400">
                   <div className="flex items-center flex-1 space-x-4 text-sm mt-1">
                     <p>
-                      <span className="text-gray-500">Pending Tickets: </span>
+                      <span className="text-gray-500">Establish Frequency Limits for Any EM Code for Specific Platform </span>
                       <span className="dark:text-white">
                         
                       </span>
                     </p>
-                    <p>
-                      <span className="text-gray-500">Completed Tickets: </span>
-                      <span className="dark:text-white">
-                        
-                      </span>
-                    </p>
+                   
                   </div>
                 </span>
               </h2>
             </div>
+
+            <hr className="mb-4"/>
 
             <div className="mb-4 items-center gap-4 flex justify-between">
               <div className="flex">
@@ -77,6 +74,7 @@
                     <th className="px-4 py-3">Action</th>
                   </tr>
                 </thead>
+                {!loading ? (
                 <tbody>
                   {Object.entries(grouped).map(([emcode, rows]) => (
                     <React.Fragment key={emcode}>
@@ -104,6 +102,7 @@
                       </tr>
 
                       {/* Platform rows */}
+                      
                       {openRows[emcode] &&
                         rows.map((platformRow, i) => (
                           <tr
@@ -133,6 +132,20 @@
                     </React.Fragment>
                   ))}
                 </tbody>
+                ) :
+                (
+                  <tbody>
+                    {Array.from({length:10}).map((_,index) => (
+                      <tr className="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" >
+                         <td colSpan={1} className="p-2 italic text-gray-400"> <span className="animate-pulse h-4 bg-gray-200 rounded-md dark:bg-gray-700 inline-block w-[100%]"></span></td>
+                         <td colSpan={1} className="p-2 italic text-gray-400"> <span className="animate-pulse h-4 bg-gray-200 rounded-md dark:bg-gray-700 inline-block w-[100%]"></span></td>
+                         <td colSpan={1} className="p-2 italic text-gray-400"> <span className="animate-pulse h-4 bg-gray-200 rounded-md dark:bg-gray-700 inline-block w-[100%]"></span></td>
+                         <td colSpan={1} className="p-2 italic text-gray-400"> <span className="animate-pulse h-4 bg-gray-200 rounded-md dark:bg-gray-700 inline-block w-[100%]"></span></td>
+                         <td colSpan={1} className="p-2 italic text-gray-400"> <span className="animate-pulse h-4 bg-gray-200 rounded-md dark:bg-gray-700 inline-block w-[100%]"></span></td>
+                      </tr>
+                      ))}
+                </tbody>
+                )}
               </table>
             </div>
             {showModal && (
