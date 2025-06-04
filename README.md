@@ -1,65 +1,29 @@
 npm install
-npm : npm WARN EBADENGINE Unsupported engine {
+npm : npm warn ERESOLVE overriding peer dependency
 At line:1 char:1
 + npm install
 + ~~~~~~~~~~~
-    + CategoryInfo          : NotSpecified: (npm WARN EBADENGINE Unsupported engine {:String) [], RemoteException
+    + CategoryInfo          : NotSpecified: (npm warn ERESOL...peer dependency:String) [], RemoteException
     + FullyQualifiedErrorId : NativeCommandError
  
-npm WARN EBADENGINE   package: 'bundle-name@4.1.0',
-npm WARN EBADENGINE   required: { node: '>=18' },
-npm WARN EBADENGINE   current: { node: 'v16.10.0', npm: '7.24.0' }
-npm WARN EBADENGINE }
-npm WARN EBADENGINE Unsupported engine {
-npm WARN EBADENGINE   package: 'cookie@1.0.2',
-npm WARN EBADENGINE   required: { node: '>=18' },
-npm WARN EBADENGINE   current: { node: 'v16.10.0', npm: '7.24.0' }
-npm WARN EBADENGINE }
-npm WARN EBADENGINE Unsupported engine {
-npm WARN EBADENGINE   package: 'default-browser@5.2.1',
-npm WARN EBADENGINE   required: { node: '>=18' },
-npm WARN EBADENGINE   current: { node: 'v16.10.0', npm: '7.24.0' }
-npm WARN EBADENGINE }
-npm WARN EBADENGINE Unsupported engine {
-npm WARN EBADENGINE   package: 'default-browser-id@5.0.0',
-npm WARN EBADENGINE   required: { node: '>=18' },
-npm WARN EBADENGINE   current: { node: 'v16.10.0', npm: '7.24.0' }
-npm WARN EBADENGINE }
-npm WARN EBADENGINE Unsupported engine {
-npm WARN EBADENGINE   package: 'p-retry@6.2.1',
-npm WARN EBADENGINE   required: { node: '>=16.17' },
-npm WARN EBADENGINE   current: { node: 'v16.10.0', npm: '7.24.0' }
-npm WARN EBADENGINE }
-npm WARN EBADENGINE Unsupported engine {
-npm WARN EBADENGINE   package: 'react-router@7.0.2',
-npm WARN EBADENGINE   required: { node: '>=20.0.0' },
-npm WARN EBADENGINE   current: { node: 'v16.10.0', npm: '7.24.0' }
-npm WARN EBADENGINE }
-npm WARN EBADENGINE Unsupported engine {
-npm WARN EBADENGINE   package: 'react-router-dom@7.0.2',
-npm WARN EBADENGINE   required: { node: '>=20.0.0' },
-npm WARN EBADENGINE   current: { node: 'v16.10.0', npm: '7.24.0' }
-npm WARN EBADENGINE }
-npm WARN EBADENGINE Unsupported engine {
-npm WARN EBADENGINE   package: 'run-applescript@7.0.0',
-npm WARN EBADENGINE   required: { node: '>=18' },
-npm WARN EBADENGINE   current: { node: 'v16.10.0', npm: '7.24.0' }
-npm WARN EBADENGINE }
-npm WARN EBADENGINE Unsupported engine {
-npm WARN EBADENGINE   package: 'webpack-dev-middleware@7.4.2',
-npm WARN EBADENGINE   required: { node: '>= 18.12.0' },
-npm WARN EBADENGINE   current: { node: 'v16.10.0', npm: '7.24.0' }
-npm WARN EBADENGINE }
-npm WARN EBADENGINE Unsupported engine {
-npm WARN EBADENGINE   package: 'webpack-dev-server@5.2.0',
-npm WARN EBADENGINE   required: { node: '>= 18.12.0' },
-npm WARN EBADENGINE   current: { node: 'v16.10.0', npm: '7.24.0' }
-npm WARN EBADENGINE }
-npm WARN EBADENGINE Unsupported engine {
-npm WARN EBADENGINE   package: 'open@10.1.0',
-npm WARN EBADENGINE   required: { node: '>=18' },
-npm WARN EBADENGINE   current: { node: 'v16.10.0', npm: '7.24.0' }
-npm WARN EBADENGINE }
+npm warn While resolving: react-popper@1.3.11
+npm warn Found: react@18.3.1
+npm warn node_modules/react
+npm warn   react@"^18.3.1" from the root project
+npm warn   18 more (@hypnosphi/create-react-context, @react-aria/ssr, ...)
+npm warn
+npm warn Could not resolve dependency:
+npm warn peer react@"0.14.x || ^15.0.0 || ^16.0.0 || ^17.0.0" from react-popper@1.3.11
+npm warn node_modules/reactstrap/node_modules/react-popper
+npm warn   react-popper@"^1.3.6" from reactstrap@8.10.1
+npm warn   node_modules/reactstrap
+npm warn
+npm warn Conflicting peer dependency: react@17.0.2
+npm warn node_modules/react
+npm warn   peer react@"0.14.x || ^15.0.0 || ^16.0.0 || ^17.0.0" from react-popper@1.3.11
+npm warn   node_modules/reactstrap/node_modules/react-popper
+npm warn     react-popper@"^1.3.6" from reactstrap@8.10.1
+npm warn     node_modules/reactstrap
 npm notice Beginning October 4, 2021, all connections to the npm registry - including for package installation - must use TLS 1.2 or higher. You 
 are currently using plaintext http to connect. Please visit the GitHub blog for more information: 
 https://github.blog/2021-08-23-npm-registry-deprecating-tls-1-0-tls-1-1/
