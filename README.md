@@ -1,17 +1,25 @@
-select
-	ai.name,
-	am.assetid,
-	am.message,
-	case
-		when sil.quality = 0 then 'Netcom'
-		else 'Reporting'
-	end as "Current State"
-from
-	rocmetrics.automation_mapping am
-inner join rocmetrics.asset_info ai on
-	am.assetid = ai.systemnumber
-inner join rocmetrics.state_info_last sil on
-	ai.assetid = sil.assetid and ai.env = sil.env 
-where
-	am.idautomation = 199
-	and am.active = 1
+SELECT
+  ai.name,
+  am.assetid,
+  am.message,
+  CASE
+    WHEN sil.quality = 0 THEN 'Netcom'
+    ELSE 'Reporting'
+  END AS "Current State",
+  
+  -- Reporting assets for the site
+  COUNT(*) FILTER (WHERE sil.quality <> 0) OVER (PARTITION BY ai.siteid)::TEXT
+  || ' / ' ||
+  -- Total assets for the site
+  COUNT(*) OVER (PARTITION BY ai.siteid)::TEXT AS "Site Average"
+
+FROM
+  mapping am
+INNER JOIN assets ai ON
+  am.assetid = ai.systemnumber
+INNER JOIN laststate sil ON
+  ai.assetid = sil.assetid AND ai.env = sil.env
+WHERE
+  am.id = 12
+  AND am.active = 1;
+
