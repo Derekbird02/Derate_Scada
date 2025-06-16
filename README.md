@@ -1,30 +1,28 @@
-private (string? oneDay, string? oneWeek)? getFrequencyData(string control, string model, string emCode)
+private bool HasValidFrequencyEntry(string control, string model, string emCode)
 {
     if (_jsonData == null)
     {
         loadJson();
     }
 
-    if (_jsonData == null) return null;
+    if (_jsonData == null) return false;
 
-    if (!_jsonData.TryGetValue("Reference", out var referenceObj)) return null;
-    if (referenceObj is not JObject reference) return null;
+    if (!_jsonData.TryGetValue("Reference", out var referenceObj) || referenceObj is not JObject reference)
+        return false;
 
     string key = $"{model}|{control}";
     string? platform = reference[key]?.ToString();
-    if (string.IsNullOrEmpty(platform)) return null;
+    if (string.IsNullOrEmpty(platform)) return false;
 
-    if (!_jsonData.TryGetValue("Frequency", out var freqObj)) return null;
-    if (freqObj is not JObject frequency) return null;
+    if (!_jsonData.TryGetValue("Frequency", out var freqObj) || freqObj is not JObject frequency)
+        return false;
 
     var emEntry = frequency[emCode] as JObject;
-    if (emEntry == null) return null;
+    if (emEntry == null) return false;
 
     var platformEntry = emEntry[platform] as JObject;
-    if (platformEntry == null) return null;
+    if (platformEntry == null) return false;
 
-    string? oneDay = platformEntry.Value<string?>("sequence");
-    string? oneWeek = platformEntry.Value<string?>("note");
-
-    return (oneDay, oneWeek);
+    string? sequence = platformEntry.Value<string?>("sequence");
+    return !string.IsNullOrEmpty(sequence);
 }
