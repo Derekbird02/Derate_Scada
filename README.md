@@ -10,7 +10,7 @@ for (let i = 0; i < raw.length; i++) {
 
     if (Array.isArray(obj.data)) {
       obj.data.forEach((trace, index) => {
-        // Assign yaxis dynamically: y, y2, y3...
+        // Plotly expects first axis to be 'y', then 'y2', 'y3', ...
         trace.yaxis = index === 0 ? 'y' : 'y' + (index + 1);
         trace.type = 'scatter';
         trace.mode = 'lines';
@@ -18,11 +18,11 @@ for (let i = 0; i < raw.length; i++) {
       });
     }
   } catch (e) {
-    // ignore bad rows
+    // skip bad rows
   }
 }
 
-// Dynamically generate yaxis1, yaxis2, ..., yaxisN
+// Build layout dynamically
 let layout = {
   title: { text: 'Custom Plotly Chart' },
   xaxis: {
@@ -38,14 +38,15 @@ let layout = {
   },
 };
 
+// Add all required yaxes based on trace count
 plotlySeries.forEach((_, index) => {
   const axisKey = index === 0 ? 'yaxis' : 'yaxis' + (index + 1);
   layout[axisKey] = {
     title: `Y${index + 1}`,
     overlaying: 'y',
     side: index % 2 === 0 ? 'left' : 'right',
-    position: index === 0 ? 0 : Math.min(1, index * 0.1), // Avoid overlapping
     anchor: 'free',
+    position: index === 0 ? 0.0 : 0.05 * index, // slightly offset axes
     autorange: true,
   };
 });
