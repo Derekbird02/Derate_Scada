@@ -1,6 +1,6 @@
 const { data, variables } = arguments;
 
-let targetName = variables?.targetName || "Sample Data3"; // Use variable or hardcoded name
+let targetNames = ["Sample Data", "Sample Data2"]; // You can customize this or use variables
 let raw = data.series[0].fields[0].values;
 let plotlySeries = [];
 
@@ -10,10 +10,9 @@ for (let i = 0; i < raw.length; i++) {
     let obj = typeof row === 'string' ? JSON.parse(row) : row;
 
     if (Array.isArray(obj.data)) {
-      // Only include the trace that matches the target name
       obj.data.forEach((trace) => {
-        if (trace.name === targetName) {
-          trace.yaxis = 'y'; // Use default y-axis
+        if (targetNames.includes(trace.name)) {
+          trace.yaxis = 'y'; // Share the same Y-axis
           trace.type = 'scatter';
           trace.mode = 'lines';
           plotlySeries.push(trace);
@@ -21,14 +20,14 @@ for (let i = 0; i < raw.length; i++) {
       });
     }
   } catch (e) {
-    // skip bad rows
+    // ignore malformed rows
   }
 }
 
 return {
   data: plotlySeries,
   layout: {
-    title: { text: `Trace: ${targetName}` },
+    title: { text: `Traces: ${targetNames.join(", ")}` },
     xaxis: {
       title: 'Time',
       type: 'date',
