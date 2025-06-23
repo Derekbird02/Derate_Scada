@@ -1,16 +1,30 @@
-SELECT
-  f.id,
-  elem ->> 'name' AS series_name,
-  x_vals.value::timestamp AS ts,
-  y_vals.value::float8 AS value
-FROM workflows w
-JOIN figures f ON w.wfid = f.wfid
-WHERE w.wfid = '2342123'
-  AND get_byte(f."binary", 0) = ascii('{')  -- only JSON blobs
-  -- or: AND convert_from(f."binary", 'UTF-8') LIKE '{%'
+const { data, variables, options, utils } = arguments;
 
--- Now parse JSON
-, LATERAL jsonb_array_elements( (convert_from(f."binary", 'UTF-8'))::jsonb -> 'data' ) AS elem
-, LATERAL jsonb_array_elements_text(elem -> 'x') WITH ORDINALITY AS x_vals(value, idx1)
-, LATERAL jsonb_array_elements(elem -> 'y') WITH ORDINALITY AS y_vals(value, idx2)
-WHERE idx1 = idx2
+if (!data.series.length || !data.series[0].fields.length) {
+  return {
+    data: [],
+    layout: { title: 'No data available' },
+  };
+}
+
+let raw = data.series[0].fields[0].values;
+let jsonText = raw?.get(0); // Assumes the JSON is in first row
+let parsed;
+
+try {
+  parsed = JSON.parse(jsonText); // Should be { data: [...] }
+} catch (err) {
+  return {
+    data: [],
+    layout: { title: 'Invalid JSON format in data field' },
+  };
+}
+
+return {
+  data: parsed.data,
+  layout: {
+    title: 'Custom Plotly Chart',
+    xaxis: { title: 'Time' },
+    yaxis: { title: 'Value' },
+  },
+};
