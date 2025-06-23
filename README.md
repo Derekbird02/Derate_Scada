@@ -6,3 +6,5 @@ javascript:window.open('', '_blank').document.write(`
     </body>
   </html>
 `);
+
+<button onclick="window.open().document.write('<img src=\'data:image/png;base64,PUT_BASE64_HERE\'>')">View Image</button>
