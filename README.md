@@ -1,17 +1,48 @@
-javascript:window.open('', '_blank').document.write(`
-  <html>
-    <head><title>Image</title></head>
-    <body style="margin:0">
-      <img src="${__value.raw}" style="max-width:100%;height:auto">
-    </body>
-  </html>
-`);
+const { data, variables } = arguments;
 
-<button onclick="window.open().document.write('<img src=\'data:image/png;base64,PUT_BASE64_HERE\'>')">View Image</button>
+let targetName = variables?.targetName || "Sample Data3"; // Use variable or hardcoded name
+let raw = data.series[0].fields[0].values;
+let plotlySeries = [];
 
-javascript:window.open().document.write('<html><body style="margin:0"><img src="${__data.fields.image_data.values[0]}" style="max-width:100%"></body></html>');
+for (let i = 0; i < raw.length; i++) {
+  let row = raw.get(i);
+  try {
+    let obj = typeof row === 'string' ? JSON.parse(row) : row;
 
-javascript:(() => {
-  const win = window.open();
-  win.document.write('<html><head><title>PNG</title></head><body style="margin:0"><img src="' + ${__data.fields.image_data.values[0]} + '" style="max-width:100%"></body></html>');
-})();
+    if (Array.isArray(obj.data)) {
+      // Only include the trace that matches the target name
+      obj.data.forEach((trace) => {
+        if (trace.name === targetName) {
+          trace.yaxis = 'y'; // Use default y-axis
+          trace.type = 'scatter';
+          trace.mode = 'lines';
+          plotlySeries.push(trace);
+        }
+      });
+    }
+  } catch (e) {
+    // skip bad rows
+  }
+}
+
+return {
+  data: plotlySeries,
+  layout: {
+    title: { text: `Trace: ${targetName}` },
+    xaxis: {
+      title: 'Time',
+      type: 'date',
+      autorange: true,
+    },
+    yaxis: {
+      title: 'Value',
+      autorange: true,
+    },
+    showlegend: true,
+    legend: {
+      orientation: 'h',
+      x: 0,
+      y: -0.3,
+    },
+  },
+};
