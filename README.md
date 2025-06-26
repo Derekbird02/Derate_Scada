@@ -1,10 +1,48 @@
-This is your automated NetCom status summary for the towers currently being tracked. Below, you’ll find the current status of each tower and the average NetCom performance for the entire site it belongs to. This is designed to help you quickly assess park-level performance and identify areas requiring attention.
+const { data, variables } = arguments;
 
-If you would like to begin or stop tracking a specific tower, you can easily toggle its status in the AIO Tool.
+let targetName = variables?.targetName || "Sample Data3"; // Use variable or hardcoded name
+let raw = data.series[0].fields[0].values;
+let plotlySeries = [];
 
-A Few Key Notes:
-	•	To monitor an entire site, you only need to toggle one tower at that location.
-	•	The email will then automatically include the site-wide (park) average, making it easy to assess site-level performance at a glance.
-	•	You can access the AIO Tool anytime to manage which towers are included in this summary.
+for (let i = 0; i < raw.length; i++) {
+  let row = raw.get(i);
+  try {
+    let obj = typeof row === 'string' ? JSON.parse(row) : row;
 
-For any questions or access issues, please reach out to the support team.
+    if (Array.isArray(obj.data)) {
+      // Only include the trace that matches the target name
+      obj.data.forEach((trace) => {
+        if (trace.name === targetName) {
+          trace.yaxis = 'y'; // Use default y-axis
+          trace.type = 'scatter';
+          trace.mode = 'lines';
+          plotlySeries.push(trace);
+        }
+      });
+    }
+  } catch (e) {
+    // skip bad rows
+  }
+}
+
+return {
+  data: plotlySeries,
+  layout: {
+    title: { text: `Trace: ${targetName}` },
+    xaxis: {
+      title: 'Time',
+      type: 'date',
+      autorange: true,
+    },
+    yaxis: {
+      title: 'Value',
+      autorange: true,
+    },
+    showlegend: true,
+    legend: {
+      orientation: 'h',
+      x: 0,
+      y: -0.3,
+    },
+  },
+};
