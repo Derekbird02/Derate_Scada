@@ -1,7 +1,24 @@
-const { data, variables } = arguments;
+const { data } = arguments;
 
-let targetName = variables?.targetName || "Sample Data3"; // Use variable or hardcoded name
-let raw = data.series[0].fields[0].values;
+// Get the `workflow` and `data` fields
+let workflowField = data.series[0].fields.find(f => f.name === "workflow");
+let dataField = data.series[0].fields.find(f => f.name === "data");
+
+// Get the actual workflow name from the first row
+let workflowName = workflowField?.values?.get(0) || "";
+
+// Map workflow name to the correct trace name
+let targetName = "";
+if (workflowName === "120") {
+  targetName = "SampleData3";
+} else if (workflowName === "430Flow") {
+  targetName = "SampleTest3";
+} else {
+  targetName = "Unknown"; // fallback
+}
+
+// Parse and filter trace data
+let raw = dataField?.values;
 let plotlySeries = [];
 
 for (let i = 0; i < raw.length; i++) {
@@ -10,10 +27,9 @@ for (let i = 0; i < raw.length; i++) {
     let obj = typeof row === 'string' ? JSON.parse(row) : row;
 
     if (Array.isArray(obj.data)) {
-      // Only include the trace that matches the target name
       obj.data.forEach((trace) => {
         if (trace.name === targetName) {
-          trace.yaxis = 'y'; // Use default y-axis
+          trace.yaxis = 'y';
           trace.type = 'scatter';
           trace.mode = 'lines';
           plotlySeries.push(trace);
@@ -21,10 +37,11 @@ for (let i = 0; i < raw.length; i++) {
       });
     }
   } catch (e) {
-    // skip bad rows
+    // skip invalid JSON rows
   }
 }
 
+// Final output
 return {
   data: plotlySeries,
   layout: {
