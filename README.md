@@ -1,13 +1,16 @@
-private (string? sequence, string? note)? getFrequencySequenceDataAIO(string control, string model, string emCode)
+private string? GetFormattedFunctionParameters(string control, string model, string emCode)
 {
-    var platform = GetNewPlatformAIO(model, control);
-    if (platform == null) return null;
+    var data = getFrequencySequenceDataAIO(control, model, emCode);
+    if (data == null) return null;
 
-    var platformEntry = GetPlatformFreqAIO(emCode, platform);
-    if (platformEntry == null) return null;
+    var (sequence, note) = data.Value;
 
-    return (
-        platformEntry.Value<string?>("sequence"),
-        platformEntry.Value<string?>("note")
-    );
+    // Escape values and construct the functionParameters-style JSON fragment
+    var sequencePart = sequence != null ? $"sequence:\\\"{sequence}\\\"" : null;
+    var notePart = note != null ? $"noteInput:\\\"{note}\\\"" : null;
+
+    // Combine parts (with comma if both are present)
+    string combined = string.Join(", ", new[] { sequencePart, notePart }.Where(x => x != null));
+
+    return combined;
 }
