@@ -1,25 +1,36 @@
-const raw = data.series[0].fields[0].values[0];
+// Get the raw Plotly JSON string
+const raw = data.series[0]?.fields[0]?.values[0];
+
+// If there's no data, return a blank chart
+if (!raw) {
+  return {
+    data: [],
+    layout: {
+      title: { text: '', font: { color: 'black' } },
+      xaxis: { visible: false },
+      yaxis: { visible: false },
+    }
+  };
+}
+
+// Parse the string into a JavaScript object
 const plotlyChart = JSON.parse(raw);
 
-// Normalize y-axis usage
-plotlyChart.data.forEach((trace, index) => {
-  if (index === 3) {
-    trace.yaxis = 'y2'; // Trace 4 (index 3) uses secondary y-axis
-  } else {
-    delete trace.yaxis; // Ensure others use primary y-axis
-  }
-});
+// Ensure at least one trace uses the default yaxis ('y')
+const hasYaxis1 = plotlyChart.data?.some(trace => !trace.yaxis || trace.yaxis === 'y');
+if (!hasYaxis1 && plotlyChart.data?.length > 0) {
+  plotlyChart.data[0].yaxis = 'y';
+}
 
+// Build the layout enhancements
 plotlyChart.layout = {
   ...(plotlyChart.layout || {}),
 
   title: {
     ...(plotlyChart.layout?.title || {}),
-    font: {
-      color: 'black'
-    },
+    font: { color: 'black' },
     y: 0.90,
-    yanchor: 'top'
+    yanchor: 'top',
   },
 
   xaxis: {
@@ -28,22 +39,13 @@ plotlyChart.layout = {
       text: plotlyChart.layout?.xaxis?.title?.text || "",
       font: { color: 'black' }
     },
-    tickfont: {
-      color: 'black'
-    }
+    tickfont: { color: 'black' }
   },
 
   yaxis: {
     ...(plotlyChart.layout?.yaxis || {}),
-    titlefont: { color: 'black' },
-    tickfont: { color: 'black' }
-  },
-
-  // Define secondary y-axis for the 4th trace
-  yaxis2: {
-    overlaying: 'y',
-    side: 'right',
-    title: 'Secondary Y-Axis', // you can customize this
+    autorange: false,
+    range: plotlyChart.layout?.yaxis?.range || undefined,
     titlefont: { color: 'black' },
     tickfont: { color: 'black' }
   },
@@ -60,6 +62,7 @@ plotlyChart.layout = {
   }
 };
 
+// Return the final Plotly config
 return {
   data: plotlyChart.data,
   layout: plotlyChart.layout
