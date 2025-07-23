@@ -1,9 +1,13 @@
 const raw = data.series[0].fields[0].values[0];
 const plotlyChart = JSON.parse(raw);
 
-// Force all traces to use the main y-axis
-plotlyChart.data.forEach(trace => {
-  delete trace.yaxis;
+// Normalize y-axis usage
+plotlyChart.data.forEach((trace, index) => {
+  if (index === 3) {
+    trace.yaxis = 'y2'; // Trace 4 (index 3) uses secondary y-axis
+  } else {
+    delete trace.yaxis; // Ensure others use primary y-axis
+  }
 });
 
 plotlyChart.layout = {
@@ -15,7 +19,7 @@ plotlyChart.layout = {
       color: 'black'
     },
     y: 0.90,
-    yanchor: 'top',
+    yanchor: 'top'
   },
 
   xaxis: {
@@ -31,8 +35,17 @@ plotlyChart.layout = {
 
   yaxis: {
     ...(plotlyChart.layout?.yaxis || {}),
-    tickfont: { color: 'black' },
-    titlefont: { color: 'black' }
+    titlefont: { color: 'black' },
+    tickfont: { color: 'black' }
+  },
+
+  // Define secondary y-axis for the 4th trace
+  yaxis2: {
+    overlaying: 'y',
+    side: 'right',
+    title: 'Secondary Y-Axis', // you can customize this
+    titlefont: { color: 'black' },
+    tickfont: { color: 'black' }
   },
 
   showlegend: true,
