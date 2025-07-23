@@ -1,25 +1,23 @@
-// Get the raw Plotly JSON string
 const raw = data.series[0].fields[0].values[0];
-
-// Parse the string into a JavaScript object
 const plotlyChart = JSON.parse(raw);
 
-// Enhance layout with custom styles
+// Force all traces to use the main y-axis
+plotlyChart.data.forEach(trace => {
+  delete trace.yaxis;
+});
+
 plotlyChart.layout = {
   ...(plotlyChart.layout || {}),
 
-  // Title customization
   title: {
     ...(plotlyChart.layout?.title || {}),
     font: {
-      color: 'black', // Title font color
+      color: 'black'
     },
     y: 0.90,
     yanchor: 'top',
-    
   },
 
-  // X-axis customization
   xaxis: {
     ...(plotlyChart.layout?.xaxis || {}),
     title: {
@@ -31,28 +29,24 @@ plotlyChart.layout = {
     }
   },
 
-  // Y-axis customization
   yaxis: {
     ...(plotlyChart.layout?.yaxis || {}),
-    
+    tickfont: { color: 'black' },
+    titlefont: { color: 'black' }
   },
 
-  // Legend customization (keeps toggling behavior)
   showlegend: true,
   legend: {
     orientation: 'h',
     x: 0.5,
     xanchor: 'center',
-    y:-0.2,
+    y: -0.2,
     font: { color: 'white' },
     bgcolor: 'rgba(0,0,0,0)',
     bordercolor: '#444'
-  },
-
- 
+  }
 };
 
-// Return the formatted chart
 return {
   data: plotlyChart.data,
   layout: plotlyChart.layout
