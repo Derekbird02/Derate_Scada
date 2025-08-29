@@ -1,4 +1,4 @@
-import psycopg2
+**import psycopg2
 from psycopg2.extras import execute_values
 
 # Connection configs
@@ -31,18 +31,28 @@ def transfer_data():
         src_cur = src_conn.cursor()
         tgt_cur = tgt_conn.cursor()
 
-        # 1. Get column names dynamically
+        # 1. Get column names for source and target
         src_cur.execute("""
             SELECT column_name
             FROM information_schema.columns
             WHERE table_name = 'signals_info'
             ORDER BY ordinal_position
         """)
-        cols = [row[0] for row in src_cur.fetchall()]
-        col_names = ", ".join(cols)
-        placeholders = ", ".join(["%s"] * len(cols))
+        src_cols = [row[0] for row in src_cur.fetchall()]
 
-        # 2. Fetch all data for given time range
+        tgt_cur.execute("""
+            SELECT column_name
+            FROM information_schema.columns
+            WHERE table_name = 'signals_info'
+            ORDER BY ordinal_position
+        """)
+        tgt_cols = [row[0] for row in tgt_cur.fetchall()]
+
+        # 2. Use only columns that exist in BOTH
+        common_cols = [col for col in src_cols if col in tgt_cols]
+        col_names = ", ".join(common_cols)
+
+        # 3. Fetch data from source for only common columns
         src_cur.execute(f"""
             SELECT {col_names}
             FROM signals_info
@@ -54,7 +64,7 @@ def transfer_data():
             print("No rows found in source.")
             return
 
-        # 3. Build insert with DO NOTHING on conflict
+        # 4. Insert into target, skip duplicates
         insert_sql = f"""
             INSERT INTO signals_info ({col_names})
             VALUES %s
@@ -77,3 +87,4 @@ def transfer_data():
 
 if __name__ == "__main__":
     transfer_data()
+**
