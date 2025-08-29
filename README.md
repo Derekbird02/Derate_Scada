@@ -31,31 +31,40 @@ def transfer_data():
         src_cur = src_conn.cursor()
         tgt_cur = tgt_conn.cursor()
 
-        # 1. Fetch data from source
+        # 1. Get column names dynamically
         src_cur.execute("""
-            SELECT assetid, blocktimestamp, env, value
+            SELECT column_name
+            FROM information_schema.columns
+            WHERE table_name = 'signals_info'
+            ORDER BY ordinal_position
+        """)
+        cols = [row[0] for row in src_cur.fetchall()]
+        col_names = ", ".join(cols)
+        placeholders = ", ".join(["%s"] * len(cols))
+
+        # 2. Fetch all data for given time range
+        src_cur.execute(f"""
+            SELECT {col_names}
             FROM signals_info
             WHERE blocktimestamp >= %s AND blocktimestamp < %s
         """, (START_TS, END_TS))
-
         rows = src_cur.fetchall()
 
         if not rows:
             print("No rows found in source.")
             return
 
-        # 2. Insert into target with UPSERT
-        insert_sql = """
-            INSERT INTO signals_info (assetid, blocktimestamp, env, value)
+        # 3. Build insert with DO NOTHING on conflict
+        insert_sql = f"""
+            INSERT INTO signals_info ({col_names})
             VALUES %s
-            ON CONFLICT ON CONSTRAINT signals_constraint
-            DO UPDATE SET value = EXCLUDED.value;
+            ON CONFLICT ON CONSTRAINT signals_constraint DO NOTHING;
         """
 
         execute_values(tgt_cur, insert_sql, rows, page_size=1000)
         tgt_conn.commit()
 
-        print(f"Transferred {len(rows)} rows successfully.")
+        print(f"Inserted {len(rows)} rows (skipped duplicates).")
 
     except Exception as e:
         print("Error:", e)
