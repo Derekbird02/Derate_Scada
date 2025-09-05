@@ -1,5 +1,7 @@
 import psycopg2
 import pandas as pd
+from openpyxl import load_workbook
+from openpyxl.styles import PatternFill
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
@@ -17,109 +19,76 @@ DB_CONFIG = {
     "port": 5432
 }
 
-SITE_ID = 12345  # Replace with your site ID
-
-# -------------------------
-# Email Config
-# -------------------------
-smtp_server = "smtp.example.com"
-smtp_port = 587
-from_addr = "youremail@example.com"
-to_addr = "youremail@example.com"
-subject = "Daily Asset Status Report"
-body = "Attached is the daily asset status report."
-
-# -------------------------
-# SQL Query
-# -------------------------
-QUERY = f"""
-WITH midnight_status AS (
-    SELECT 
-        s.assetid,
-        s.ieccode,
-        s.quality,
-        CASE 
-            WHEN s.quality = 3 AND s.ieccode IN (1, 2, 4, 13, 14, 15) THEN 'O'
-            WHEN s.quality = 3 THEN 'S'
-            ELSE 'S'
-        END AS status,
-        CASE 
-            WHEN s.quality = 3 AND s.ieccode = 1  THEN 'Running'
-            WHEN s.quality = 3 AND s.ieccode = 2  THEN 'Standby'
-            WHEN s.quality = 3 AND s.ieccode = 4  THEN 'Startup'
-            WHEN s.quality = 3 AND s.ieccode = 6  THEN 'Faulted'
-            WHEN s.quality = 3 AND s.ieccode = 9  THEN 'Communication Fault'
-            WHEN s.quality = 3 AND s.ieccode = 13 THEN 'Online'
-            WHEN s.quality = 3 AND s.ieccode = 14 THEN 'Curtailment'
-            WHEN s.quality = 3 AND s.ieccode = 15 THEN 'Normal Stop'
-            ELSE 'Unknown'
-        END AS status_text
-    FROM state_info s
-    WHERE s.siteid = {SITE_ID}
-      AND s.blocktimestamp = (date_trunc('day', now() AT TIME ZONE 'US/Central') + interval '1 hour') AT TIME ZONE 'US/Eastern'
-),
-case_counts AS (
-    SELECT 
-        c.assetid,
-        COUNT(*) AS case_count
-    FROM cases c
-    WHERE c.siteid = {SITE_ID}
-      AND c.type = 2
-      AND c.insertdate >= now() - interval '24 hours'
-    GROUP BY c.assetid
-)
-SELECT 
-    a.shortname,
-    m.status || '(' || COALESCE(cc.case_count,0)::text || ')' AS status_with_cases,
-    m.status_text
-FROM midnight_status m
-JOIN asset_info a ON a.assetid = m.assetid
-LEFT JOIN case_counts cc ON m.assetid = cc.assetid
-ORDER BY a.shortname;
-"""
+SITE_ID = 12345
+excel_file = "asset_status.xlsx"
 
 # -------------------------
 # Run Query and Save to Excel
 # -------------------------
+QUERY = f"""
+-- Your full query here, output must include 'status_with_cases' column
+"""
+
 conn = psycopg2.connect(**DB_CONFIG)
 df = pd.read_sql(QUERY, conn)
 conn.close()
 
-excel_file = "asset_status.xlsx"
+# Save DataFrame to Excel
 df.to_excel(excel_file, index=False)
 
 # -------------------------
-# Create Email with Attachment
+# Apply cell coloring using openpyxl
 # -------------------------
+wb = load_workbook(excel_file)
+ws = wb.active
+
+red_fill = PatternFill(start_color="FFC7CE", end_color="FFC7CE", fill_type="solid")
+green_fill = PatternFill(start_color="C6EFCE", end_color="C6EFCE", fill_type="solid")
+
+# Assuming 'status_with_cases' is in column B (adjust if needed)
+status_col = None
+for idx, cell in enumerate(ws[1], 1):
+    if cell.value == "status_with_cases":
+        status_col = idx
+        break
+
+if status_col:
+    for row in ws.iter_rows(min_row=2, min_col=status_col, max_col=status_col):
+        cell = row[0]
+        if str(cell.value).startswith("R"):
+            cell.fill = red_fill
+        elif str(cell.value).startswith("G"):
+            cell.fill = green_fill
+
+wb.save(excel_file)
+
+# -------------------------
+# Email setup (same as before)
+# -------------------------
+smtp_server = "smtp.example.com"
+smtp_port = 587
+from_addr = "you@example.com"
+to_addrs = ["recipient1@example.com", "recipient2@example.com"]
+subject = "Daily Asset Status Report"
+body = "Attached is the daily asset status report."
+
 msg = MIMEMultipart()
 msg['From'] = from_addr
-msg['To'] = to_addr
+msg['To'] = ", ".join(to_addrs)
 msg['Subject'] = subject
-
-# Attach the body
 msg.attach(MIMEText(body, "html"))
 
-# Attach the Excel file
 with open(excel_file, "rb") as f:
     part = MIMEBase("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     part.set_payload(f.read())
     encoders.encode_base64(part)
-    part.add_header(
-        "Content-Disposition",
-        f"attachment; filename= {excel_file}",
-    )
+    part.add_header("Content-Disposition", f"attachment; filename={excel_file}")
     msg.attach(part)
 
-# -------------------------
-# Send Email
-# -------------------------
-try:
-    with smtplib.SMTP(smtp_server, smtp_port) as server:
-        server.starttls()
-        # Uncomment if authentication is needed
-        # server.login(from_addr, "your_email_password")
-        server.sendmail(from_addr, [to_addr], msg.as_string())
-    print("Email sent successfully.")
-except Exception as e:
-    print(f"Error sending email: {e}")
+# Send the email
+with smtplib.SMTP(smtp_server, smtp_port) as server:
+    server.starttls()
+    # server.login(from_addr, "your_password")  # if authentication needed
+    server.sendmail(from_addr, to_addrs, msg.as_string())
 
+print("Email sent with colored Excel successfully.")
