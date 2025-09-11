@@ -1,27 +1,12 @@
-import argparse
-import os
-from events import TripFile
+from parquet_file import ParquetFile
 
-def main():
-    parser = argparse.ArgumentParser(description="Process trip event logs")
-    parser.add_argument("trip_folder", help="Trip folder name (e.g., Trip-1, Trip-2, ...)")
-    args = parser.parse_args()
+class TripFile(ParquetFile):
+    def filter_by_trip_offset(self, column: str, min_val: int, max_val: int):
+        """
+        Filter rows by trip_offset column (trip_offset_sec or trip_offset_num).
+        Example: filter_by_trip_offset("trip_offset_sec", -100, 100)
+        """
+        if column not in ["trip_offset_sec", "trip_offset_num"]:
+            raise ValueError("Column must be 'trip_offset_sec' or 'trip_offset_num'")
 
-    # Build full file path
-    base_dir = "TestTripFiles"
-    file_path = os.path.join(base_dir, args.trip_folder, "events.snappy.parquet")
-
-    # Load trip file
-    events = TripFile(file_path)
-
-    # Preview first 20 rows
-    print("\nEvents file preview:")
-    print(events.preview(20))
-
-    # Example specialized filter
-    print("\nFilter trip file by trip offset between -100 and 100:")
-    filtered = events.filter_by_trip_offset(-100, 100)
-    print(filtered)
-
-if __name__ == "__main__":
-    main()
+        return self.df[self.df[column].between(min_val, max_val)]
