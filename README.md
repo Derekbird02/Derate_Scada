@@ -1,25 +1,25 @@
+import pandas as pd
 
-WITH weekly AS (
-    SELECT
-        responsiblealarm,
-        DATE_TRUNC('week', createdtime) AS week_start,
-        COUNT(*) FILTER (WHERE notification_sent = true) AS escalated,
-        COUNT(*) AS total
-    FROM cases
-    WHERE createdtime >= NOW() - INTERVAL '8 weeks'
-      AND responsiblealarm IN (101, 202, 303)
-    GROUP BY responsiblealarm, DATE_TRUNC('week', createdtime)
-),
-percentages AS (
-    SELECT
-        responsiblealarm,
-        week_start,
-        ROUND(100.0 * escalated / NULLIF(total,0), 2) AS escalation_pct
-    FROM weekly
-)
-SELECT
-    TO_CHAR(week_start, 'YYYY-MM-DD') AS week_start,
-    ROUND(AVG(escalation_pct), 2) AS avg_escalation_pct
-FROM percentages
-GROUP BY week_start
-ORDER BY week_start ASC;   -- oldest (week 8) first
+class TripFile:
+    def __init__(self, file_path: str):
+        """Initialize and load the parquet file."""
+        self.df = pd.read_parquet(file_path)
+
+    def preview(self, n: int = 20):
+        """Preview the first n rows."""
+        return self.df.head(n)
+
+    def filter_by_trip_offset(self, min_val: int, max_val: int):
+        """Filter rows where trip_offset_sec or trip_offset_num are between min and max."""
+        return self.df[
+            (self.df["trip_offset_sec"].between(min_val, max_val)) |
+            (self.df["trip_offset_num"].between(min_val, max_val))
+        ]
+
+    def filter_by_event_class(self, event_class: str):
+        """Filter rows for a specific event_class."""
+        return self.df[self.df["event_class"] == event_class]
+
+    def filter_by_event_name(self, event_name: str):
+        """Filter rows for a specific event_name."""
+        return self.df[self.df["event_name"] == event_name]
