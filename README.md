@@ -1,63 +1,70 @@
-Process Document: Automated ETG Trip Analysis Procedure
-1. Purpose
-The purpose of this procedure is to introduce and standardize the use of automated ETG (Event Trip Generator) analysis for turbine trip events. This automation enhances the quality and consistency of root cause analysis (RCA) by systematically processing turbine trip files, identifying fault conditions, and generating structured outputs tailored to specific fault codes.
-By implementing this process, operators and engineering management (EM) will benefit from faster turnaround, higher accuracy in diagnosis, and a stronger foundation for trust in automation-driven RCA.
-2. Scope
-This process applies to all turbine trip events where ETG analysis is available and applicable. The procedure is currently being introduced as a pilot program, where operators will continue performing manual analyses while cross-referencing results from the automation. Operator feedback will be used to validate the accuracy and reliability of the automated process before full implementation.
-3. Use Case
-Problem Addressed: Turbine trips often require detailed RCA to identify the fault condition. Manual analysis of trip files is time-intensive and prone to variability.
-Solution Provided: The automation executes ETG analyses automatically, processes trip files based on the identified fault codes, and provides operators with structured results and Grafana dashboard links for review.
-Benefits:
-Faster RCA initiation
-Improved diagnostic consistency
-Reduced operator workload
-Establishes confidence interval for automation
-4. Process Logic
-Step 1 – Turbine Trip Event
-A turbine trip occurs and automatically generates a case in the case management system.
-Step 2 – Trip File Availability Decision
-The automation evaluates if trip files are expected to be available for the turbine.
-If trip files are expected:
-The case is snoozed for 1 hour to allow files to be generated.
-After 1 hour, the automation checks for available ETG analysis results:
-Results found:
-A custom Grafana dashboard link is generated for the case.
-The case is moved to the L2 Queue.
-An automated email alert is sent to the assigned operator.
-No results found:
-The case is moved directly to the L2 Queue.
-An automated email alert is sent to the assigned operator.
-If trip files are not expected:
-The case is moved directly to the L2 Queue.
-An automated email alert is sent to the assigned operator.
-5. Operator Interaction
-During the pilot phase, operators are expected to:
-Review the trip event as usual and perform a manual analysis of the turbine trip.
-Access the Grafana dashboard link (if provided) and review the automated ETG analysis results.
-Cross-reference their manual conclusions with the automation’s results.
-Provide feedback on:
-Accuracy of the automated RCA
-Completeness of the analysis
-Suggestions for improvement
-This feedback will be collected and used to measure the confidence level of the automation.
-6. Roles and Responsibilities
-Operators:
-Continue performing manual RCAs during the pilot.
-Cross-reference results with automation outputs.
-Submit feedback through designated feedback channels.
-Automation Development Team:
-Maintain automation logic.
-Monitor performance and reliability.
-Incorporate operator feedback into future iterations.
-Engineering Management (EM):
-Review pilot outcomes.
-Decide on progression toward full automation.
-7. Success Criteria
-The pilot will be deemed successful when:
-Automation results match or exceed manual operator conclusions with a high confidence interval.
-Operators report that the automation reduces time spent on analysis without sacrificing quality.
-The process integrates smoothly into existing workflows with minimal disruption.
-8. Next Steps
-Following the pilot:
-If accuracy is confirmed, automation may be extended to fully execute RCA for EMs without operator intervention.
-Continuous improvements will be made based on operator input and statistical performance tracking.
+import sys
+import os
+import importlib
+import pandas as pd
+
+TRIPS_FOLDER = "TestTripFiles"
+CHECKS_PACKAGE = "checks"
+
+# --- Loader ---
+def load_trip_files(trip_name: str):
+    trip_path = os.path.join(TRIPS_FOLDER, trip_name)
+    if not os.path.exists(trip_path):
+        raise FileNotFoundError(f"Trip folder {trip_path} not found.")
+
+    base = pd.read_parquet(os.path.join(trip_path, "base.snappy.parquet"))
+    channels = pd.read_parquet(os.path.join(trip_path, "channels.snappy.parquet"))
+    events = pd.read_parquet(os.path.join(trip_path, "events.snappy.parquet"))
+    return base, channels, events
+
+# --- Dispatcher ---
+def run_trip_checks(base_df, channels_df, events_df):
+    trip_status = str(base_df.iloc[0]["trip_event_status_message"])
+    print(f"Trip Event Status: {trip_status}")
+
+    module_name = f"{CHECKS_PACKAGE}.check_{trip_status}"
+    try:
+        check_module = importlib.import_module(module_name)
+        check_module.run(base_df, channels_df, events_df)
+    except ModuleNotFoundError:
+        print(f"No automation implemented for status {trip_status}")
+
+# --- Main ---
+def main():
+    if len(sys.argv) < 2:
+        print("Usage: python main.py <TripFolderName>")
+        sys.exit(1)
+
+    trip_name = sys.argv[1]
+    base_df, channels_df, events_df = load_trip_files(trip_name)
+    run_trip_checks(base_df, channels_df, events_df)
+
+if __name__ == "__main__":
+    main()
+
+
+
+
+
+
+
+
+def run(base_df, channels_df, events_df):
+    print("Running automation for trip_event_status_message 267...")
+
+    signals = ["ts", "Offset_North", "Offset_South", "Offset_West"]
+    available_signals = [s for s in signals if s in channels_df.columns]
+
+    if not available_signals:
+        print("No matching signals found in channels file.")
+        return
+
+    df = channels_df[available_signals].copy()
+
+    if "sample_rate_sec" in channels_df.columns:
+        df = df[channels_df["sample_rate_sec"] == 0.01]
+
+    print("Preview of filtered data:")
+    print(df.head(10))
+
+    # TODO: Add deeper analysis here
