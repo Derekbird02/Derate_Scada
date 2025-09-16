@@ -6,12 +6,10 @@ client = hvac.Client(
     token=os.environ.get("VAULT_TOKEN")
 )
 
-# KV v1
-secret = client.secrets.kv.read_secret(
-    path="ls_connection",  # key name
-    mount_point="secrets"  # your KV engine mount path
+# Note: path="ls_connection" (not "secrets/ls_connection")
+secret = client.secrets.kv.read_secret_version(
+    path="ls_connection", mount_point="secrets"
 )
 
-data = secret["data"]  # v1 stores data directly here
-print(data)  # {'user': 'dbuser'}
-print("DB User:", data['user'])
+user = secret["data"]["data"]["user"]
+print("DB User:", user)
