@@ -1,9 +1,12 @@
-vault_addr="http://127.0.0.1:8200"
-vault_token="fff"
+import hvac
+import os
 
-client = hvac.Client(
-    url=os.environ.get("VAULT_ADDR", "http://127.0.0.1:8200"),
-    token=os.environ.get("VAULT_TOKEN")
-)
 
-client = hvac.Client(url=vault_addr, token=vault_token)
+urlVA=os.environ.get("VAULT_ADDR")
+tokenVT=os.environ.get("VAULT_TOKEN")
+
+client = hvac.Client(url=urlVA, token=tokenVT)
+
+read = client.read("secret/data/lsdb/creds")
+user = read["data"]["data"]["user"]
+print("DB User:", user)
