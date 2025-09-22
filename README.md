@@ -1,12 +1,8 @@
-from vault_helper import VaultClient
-
-# Initialize Vault connection
-vault = VaultClient()
-
-# Example: get just the "user" key
-db_user = vault.get_secret("secret/data/lsdb/creds", "user")
-print("DB User:", db_user)
-
-# Example: get the full secret dictionary
-db_creds = vault.get_secret("secret/data/lsdb/creds")
-print("Full DB creds:", db_creds)
+select
+   responsiblealarm,
+  AVG(EXTRACT(EPOCH FROM (createdtime - notification_sent_time))) AS avg_escalation_delay_seconds
+from
+  cases
+where
+  and c.notification_sent
+group by responsiblealarm;
