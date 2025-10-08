@@ -1,2 +1,3 @@
-icacls "C:\inetpub\wwwroot" /grant "IIS_IUSRS:(OI)(CI)(RX)"
-icacls "C:\inetpub\wwwroot\web.config" /grant "IIS_IUSRS:(RX)"
+%windir%\system32\inetsrv\appcmd unlock config /section:system.webServer/handlers
+%windir%\system32\inetsrv\appcmd unlock config /section:system.webServer/modules
+%windir%\system32\inetsrv\appcmd unlock config /section:system.webServer/rewrite/rules
