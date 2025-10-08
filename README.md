@@ -1,56 +1,41 @@
-app.post("/insert-assets", async (req, res) => {
-  const { assets, action, startDate, stopDate, timeZone, user } = req.body;
+<configuration>
+  <system.webServer>
 
-  if (!assets || !Array.isArray(assets) || assets.length === 0) {
-    return res.status(400).json({ error: "Assets array is required" });
-  }
+    <!-- Enable iisnode -->
+    <handlers>
+      <add name="iisnode" path="server\index.js" verb="*" modules="iisnode" />
+    </handlers>
 
-  const client = await pool.connect();
-  try {
-    await client.query("BEGIN");
+    <!-- Redirect API requests to Node server -->
+    <rewrite>
+      <rules>
 
-    let rows = [];
+        <!-- API routes go to Node -->
+        <rule name="API" patternSyntax="ECMAScript" stopProcessing="true">
+          <match url="^api/.*" />
+          <action type="Rewrite" url="server\index.js" />
+        </rule>
 
-    for (const asset of assets) {
-      if (action === "Stop & Start") {
-        rows.push([817, asset, "Stop", stopDate, timeZone, user]);
-        rows.push([817, asset, "Start", startDate, timeZone, user]);
-      } else if (action === "Start") {
-        rows.push([817, asset, "Start", startDate, timeZone, user]);
-      } else if (action === "Stop") {
-        rows.push([817, asset, "Stop", stopDate, timeZone, user]);
-      } else {
-        throw new Error(`Unknown action: ${action}`);
-      }
-    }
+        <!-- Otherwise, serve React app -->
+        <rule name="React Routes" stopProcessing="true">
+          <match url=".*" />
+          <conditions logicalGrouping="MatchAll">
+            <add input="{REQUEST_FILENAME}" matchType="IsFile" negate="true" />
+            <add input="{REQUEST_FILENAME}" matchType="IsDirectory" negate="true" />
+          </conditions>
+          <action type="Rewrite" url="client\index.html" />
+        </rule>
 
-    // build placeholders
-    const placeholders = rows
-      .map(
-        (row, i) =>
-          `($${i * 6 + 1}, $${i * 6 + 2}, $${i * 6 + 3}, $${i * 6 + 4}, $${i * 6 + 5}, $${i * 6 + 6}, now())`
-      )
-      .join(", ");
+      </rules>
+    </rewrite>
 
-    const values = rows.flat();
+    <!-- Logging and errors -->
+    <iisnode loggingEnabled="true" devErrorsEnabled="true" />
 
-    // single bulk insert
-    await client.query(
-      `
-      INSERT INTO my_table (
-        id, assetid, triggertext, triggerdate, information, createdby, createddate
-      ) VALUES ${placeholders}
-      `,
-      values
-    );
+    <!-- Static file serving -->
+    <staticContent>
+      <mimeMap fileExtension=".json" mimeType="application/json" />
+    </staticContent>
 
-    await client.query("COMMIT");
-    res.json({ message: `Inserted ${rows.length} rows successfully` });
-  } catch (err) {
-    await client.query("ROLLBACK");
-    console.error("Insert failed:", err);
-    res.status(500).json({ error: "Insert failed" });
-  } finally {
-    client.release();
-  }
-});
+  </system.webServer>
+</configuration>
