@@ -1,8 +1,2 @@
-<?xml version="1.0" encoding="utf-8"?>
-<configuration>
-  <system.webServer>
-    <handlers>
-      <add name="iisnode" path="server\index.js" verb="*" modules="iisnode" />
-    </handlers>
-  </system.webServer>
-</configuration>
+icacls "C:\inetpub\wwwroot" /grant "IIS_IUSRS:(OI)(CI)(RX)"
+icacls "C:\inetpub\wwwroot\web.config" /grant "IIS_IUSRS:(RX)"
