@@ -1,41 +1,21 @@
-<configuration>
-  <system.webServer>
+import express from "express";
+import path from "path";
+import { fileURLToPath } from "url";
 
-    <!-- Enable iisnode -->
-    <handlers>
-      <add name="iisnode" path="server\index.js" verb="*" modules="iisnode" />
-    </handlers>
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const app = express();
 
-    <!-- Redirect API requests to Node server -->
-    <rewrite>
-      <rules>
+app.use(express.json());
 
-        <!-- API routes go to Node -->
-        <rule name="API" patternSyntax="ECMAScript" stopProcessing="true">
-          <match url="^api/.*" />
-          <action type="Rewrite" url="server\index.js" />
-        </rule>
+// Example API route
+app.get("/api/hello", (req, res) => {
+  res.json({ message: "Hello from Node via IIS!" });
+});
 
-        <!-- Otherwise, serve React app -->
-        <rule name="React Routes" stopProcessing="true">
-          <match url=".*" />
-          <conditions logicalGrouping="MatchAll">
-            <add input="{REQUEST_FILENAME}" matchType="IsFile" negate="true" />
-            <add input="{REQUEST_FILENAME}" matchType="IsDirectory" negate="true" />
-          </conditions>
-          <action type="Rewrite" url="client\index.html" />
-        </rule>
+// Optional: Serve React app as fallback
+app.use(express.static(path.join(__dirname, "../client")));
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../client/index.html"));
+});
 
-      </rules>
-    </rewrite>
-
-    <!-- Logging and errors -->
-    <iisnode loggingEnabled="true" devErrorsEnabled="true" />
-
-    <!-- Static file serving -->
-    <staticContent>
-      <mimeMap fileExtension=".json" mimeType="application/json" />
-    </staticContent>
-
-  </system.webServer>
-</configuration>
+app.listen(process.env.PORT || 3000);
