@@ -1,1 +1,3 @@
-   This configuration section cannot be used at this path. This happens when the section is locked at a parent level. Locking is either by default (overrideModeDefault="Deny"), or set explicitly by a location tag with overrideMode="Deny" or the legacy allowOverride="false".
+SELECT
+  (date_trunc('day', (current_timestamp AT TIME ZONE 'America/Denver')) AT TIME ZONE 'America/Denver') AT TIME ZONE 'UTC' AS utc_start,
+  ((date_trunc('day', (current_timestamp AT TIME ZONE 'America/Denver')) + interval '1 day') AT TIME ZONE 'America/Denver') AT TIME ZONE 'UTC' AS utc_end;
