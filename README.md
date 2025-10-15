@@ -1,18 +1,17 @@
-app.use(express.static(path.join(__dirname, 'dist')));
-
-/**
- * Catch-all route to serve the React app's index.html for any route
- * This supports client-side routing (React Router, etc.)
- * 
- * Added a callback to handle errors gracefully without crashing the server.
- */
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'), (err) => {
-    if (err) {
-      console.error('Error sending index.html:', err);
-      if (!res.headersSent) {
-        res.status(err.status || 500).send('Error loading the app');
-      }
-    }
-  });
-});
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+<system.webServer>
+<handlers>
+<add name="iisnode" path="index.js" verb="*" modules="iisnode" />
+</handlers>
+<rewrite>
+<rules>
+<!-- Rule to serve index.js -->
+<rule name="NodeJS">
+<match url=".*" />
+<action type="Rewrite" url="index.js" />
+</rule>
+</rules>
+</rewrite>
+</system.webServer>
+</configuration>
