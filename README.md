@@ -1,92 +1,58 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>We've Moved!</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background: linear-gradient(135deg, #e0f2ff, #cde1ff);
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+import requests
+import msal
+from datetime import datetime, timedelta, timezone
 
-    .container {
-      background: white;
-      padding: 3rem 2.5rem;
-      border-radius: 20px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-      text-align: center;
-      max-width: 400px;
-      animation: fadeIn 1s ease-out forwards;
-      opacity: 0;
-    }
+# --- CONFIG ---
+CLIENT_ID = "your-client-id"
+CLIENT_SECRET = "your-client-secret"
+TENANT_ID = "your-tenant-id"
 
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
+AUTHORITY = f"https://login.microsoftonline.com/{TENANT_ID}"
+SCOPE = ["https://graph.microsoft.com/.default"]
 
-    h1 {
-      font-size: 2rem;
-      color: #222;
-      margin-bottom: 0.75rem;
-    }
+# --- AUTH ---
+app = msal.ConfidentialClientApplication(
+    CLIENT_ID,
+    authority=AUTHORITY,
+    client_credential=CLIENT_SECRET,
+)
 
-    p {
-      color: #555;
-      margin-bottom: 2rem;
-      line-height: 1.5;
-    }
+token_response = app.acquire_token_for_client(scopes=SCOPE)
 
-    .button {
-      display: inline-block;
-      background-color: #1e90ff;
-      color: white;
-      text-decoration: none;
-      font-size: 1rem;
-      font-weight: 600;
-      padding: 0.8rem 1.8rem;
-      border-radius: 12px;
-      transition: transform 0.25s ease, background-color 0.25s ease, box-shadow 0.25s ease;
-    }
+if "access_token" not in token_response:
+    raise Exception("Failed to get token:", token_response)
 
-    .button:hover {
-      background-color: #187bcd;
-      transform: scale(1.05);
-      box-shadow: 0 5px 15px rgba(30, 144, 255, 0.3);
-    }
+access_token = token_response["access_token"]
 
-    .note {
-      color: #999;
-      font-size: 0.85rem;
-      margin-top: 1.5rem;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>We've Moved!</h1>
-    <p>Our website has a new home. Please click below to visit our updated site.</p>
-    <a href="https://NEW_DOMAIN_URL" class="button">Go to New Site →</a>
-    <p class="note">You will be redirected automatically in a few seconds...</p>
-  </div>
+# --- TIME FILTER (last 10 minutes) ---
+ten_minutes_ago = datetime.now(timezone.utc) - timedelta(minutes=10)
+time_filter = ten_minutes_ago.isoformat()
 
-  <script>
-    // Redirect automatically after 7 seconds
-    setTimeout(() => {
-      window.location.href = "https://NEW_DOMAIN_URL";
-    }, 7000);
-  </script>
-</body>
-</html>
+# --- GRAPH REQUEST ---
+url = "https://graph.microsoft.com/v1.0/me/mailFolders/inbox/messages"
+
+headers = {
+    "Authorization": f"Bearer {access_token}",
+    "Content-Type": "application/json"
+}
+
+params = {
+    "$filter": f"receivedDateTime ge {time_filter}",
+    "$orderby": "receivedDateTime DESC",
+    "$top": 25
+}
+
+response = requests.get(url, headers=headers, params=params)
+
+if response.status_code != 200:
+    print(response.text)
+    raise Exception("Graph API call failed")
+
+emails = response.json().get("value", [])
+
+# --- OUTPUT ---
+for mail in emails:
+    print("Subject:", mail["subject"])
+    print("From:", mail["from"]["emailAddress"]["address"])
+    print("Received:", mail["receivedDateTime"])
+    print("-" * 50)
